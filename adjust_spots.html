@@ -14,6 +14,18 @@
 
 var circles = [];
 var paintCircles = function(jsondata, overlay) {
+    var radius = 400;
+    var spots_len = jsondata.spots.length;
+    for (var i = 0; i < spots_len; i++) {
+        var spot = jsondata.spots[i];
+        var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), radius);
+        circle.fillColor = 'red';
+        circle.visible = true;
+        circles.push(circle);
+        circle.onMouseDown = function (event) {
+            console.log("circle.onMouseDown" , "event.point.x = ", event.point.x , "event.point.y = ", event.point.y);          
+        };
+    }  
 };
 var hit_item = null;
 var drag_handler = function(event) {
@@ -50,32 +62,20 @@ window.onload = function() {
         zoomPerScroll: 1.8
     });
     var overlay = this.viewer.paperjsOverlay();
-    var paint_circles = function(overlay, event) {
-        var circles = [
-            {
-                "pixel_x": 4000,
-                "pixel_y": 4000,
-                "radius": 400
-            },
-            {
-                "pixel_x": 5000,
-                "pixel_y": 5000,
-                "radius": 400
-            }
-        ];
-        var num_circles = circles.length;
-        for (var i = 0; i < num_circles; i++) {
-            var circle = circles[i];
-            var circle = new paper.Path.Circle(new paper.Point(circle.pixel_x, circle.pixel_y), circle.radius);
-            circle.fillColor = 'red';
-            circle.visible = true;
-            circles.push(circle);
-            circle.onMouseDown = function (event) {
-                console.log("circle.onMouseDown" , "event.point.x = ", event.point.x , "event.point.y = ", event.point.y);
-            };
-        }
+    var paint_circles_from_jsonfile = function(overlay, event) {
         overlay.resize();
         overlay.resizecanvas();
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', "spots.json");
+        xhr.onload = function(overlay) {
+            if (xhr.status === 200) {
+                data = JSON.parse(xhr.responseText);
+                paintCircles(data, overlay);
+            } else {
+                alert('Could not download json. xhr.status = ' + xhr.status);
+            }
+        }.bind(null, overlay);
+        xhr.send();
     }.bind(null, overlay);
     new OpenSeadragon.MouseTracker({
         element: this.viewer.canvas,
@@ -83,15 +83,17 @@ window.onload = function() {
         dragHandler: drag_handler,
         dragEndHandler: dragEnd_handler
     }).setTracking(true);
+    
     this.viewer.addTiledImage({
         tileSource: "http://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
         x: 0,
         y: 0,
-        success: paint_circles
+        success: paint_circles_from_jsonfile
     });
     window.onresize = function() {
         overlay.resize();
         overlay.resizecanvas();
+        //    paper.view.draw();
         console.log("circles[0]=", circles[0]);
     };   
 };
