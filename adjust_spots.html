@@ -12,10 +12,43 @@
         <div id="osd" style="width: 1000px; height:800px;"></div>
         <script>                
 
+
+          var add_neightbour_line = function(current_spot, next_spot_key, grid_spots) {
+                        if (next_spot_key in grid_spots) {
+                        var from = new paper.Point(current_spot.pixel_x, current_spot.pixel_y);
+                        var to_spot = grid_spots[ next_spot_key ];
+                        
+                       var to = new paper.Point(to_spot.pixel_x, to_spot.pixel_y);
+                        console.log(JSON.stringify([from, to]));
+                        var path = new paper.Path.Line(from, to);
+                        path.strokeColor = 'red';
+                        path.strokeWidth = 50;
+                        path.visible = true;
+                        console.log("aa");
+          
+                        }
+
+          };
+
+          
 var circles = [];
 var paintCircles = function(jsondata, overlay) {
-    var radius = 400;
+    var radius = 200;
     var spots_len = jsondata.spots.length;
+    var grid_spots = {};
+    for (var i = 0; i < spots_len; i++) {
+                        var spot = jsondata.spots[i];
+                        grid_spots[ spot.grid_x + "," + spot.grid_y ] = jsondata.spots[i];
+    }
+    for (var i = 0; i < spots_len; i++) {
+                        var spot = jsondata.spots[i];
+                        var spot_to_the_under = spot.grid_y + 1;
+                        var spot_to_the_under_key = spot.grid_x + "," + spot_to_the_under;
+                        add_neightbour_line(spot, spot_to_the_under_key, grid_spots);
+                        var spot_to_the_right_x = spot.grid_x + 1;
+                        var spot_to_the_right_key = spot_to_the_right_x +  "," + spot.grid_y;
+                        add_neightbour_line(spot, spot_to_the_right_key, grid_spots);
+    }
     for (var i = 0; i < spots_len; i++) {
         var spot = jsondata.spots[i];
         var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), radius);
