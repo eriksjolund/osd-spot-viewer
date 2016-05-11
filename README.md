@@ -1,6 +1,6 @@
 # osd-spot-viewer
 
-License: The BSD 3-Clause License.
+License: The MIT License.
 
 TODO:
 
