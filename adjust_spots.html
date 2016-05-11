@@ -5,68 +5,119 @@
         <title>osd-spot-viewer</title>
         <script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script>       
         <script src="http://eriksjolund.github.io/OpenSeadragonPaperjsOverlay/openseadragon-paperjs-overlay.js"></script>        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.25/paper-full.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.24/paper-full.min.js"></script>
     </head>
     <body>
-        <h2>Drag the circles with the mouse!</h2>
+      <h2>Drag the circles with the mouse!</h2>
+
         <div id="osd" style="width: 1000px; height:800px;"></div>
         <script>                
-
-
-          var add_neightbour_line = function(current_spot, next_spot_key, grid_spots) {
-                        if (next_spot_key in grid_spots) {
-                        var from = new paper.Point(current_spot.pixel_x, current_spot.pixel_y);
-                        var to_spot = grid_spots[ next_spot_key ];
-                        
-                       var to = new paper.Point(to_spot.pixel_x, to_spot.pixel_y);
-                        console.log(JSON.stringify([from, to]));
-                        var path = new paper.Path.Line(from, to);
-                        path.strokeColor = 'red';
-                        path.strokeWidth = 50;
-                        path.visible = true;
-                        console.log("aa");
-          
-                        }
-
-          };
-
-          
-var circles = [];
-var paintCircles = function(jsondata, overlay) {
+function serialize_key_from_coordinates(x, y) {
+    return x + ',' + y;
+}
+function get_circle_from_grid_coord(grid_x, grid_y, circles) {
+    var coord_as_string = serialize_key_from_coordinates(grid_x, grid_y);
+    return circles[ coord_as_string ];
+}
+function get_circle_from_spot(spot, circles) {
+    return get_circle_from_grid_coord(spot.grid_x, spot.grid_y, circles);
+}
+function add_line_as_neighbour(line, spot, circles) {
+    var circle = get_circle_from_spot(spot,circles);
+    circle.neighbours.push(line);
+}
+var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circles, connectionLineLayer) {
+    if (next_spot_key in grid_spots) {
+        var from = new paper.Point(current_spot.pixel_x, current_spot.pixel_y);
+        var to_spot = grid_spots[ next_spot_key ];
+        var to = new paper.Point(to_spot.pixel_x, to_spot.pixel_y);
+        connectionLineLayer.activate();
+        var path = new paper.Path.Line(from, to);
+        path.strokeColor = 'red';
+        path.strokeWidth = 50;
+        path.visible = true;
+        path.from_spot = current_spot;
+        path.to_spot = to_spot;
+        add_line_as_neighbour(path, current_spot, circles);
+        add_line_as_neighbour(path, to_spot, circles);
+    }
+};
+var circles = {};
+var jsondata = null;
+function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay) {
     var radius = 200;
     var spots_len = jsondata.spots.length;
+    // grid_spots is a Javascript object that provides a mapping between
+    // logical grid coordinates and the json spot data.
+    // For instance, the coordinate x=0 y=0 is set like this:
+    // grid_spots[ "0,0" ] = json_spot;
     var grid_spots = {};
     for (var i = 0; i < spots_len; i++) {
-                        var spot = jsondata.spots[i];
-                        grid_spots[ spot.grid_x + "," + spot.grid_y ] = jsondata.spots[i];
+        var spot = jsondata.spots[i];
+        var coord_as_string = serialize_key_from_coordinates(spot.grid_x, spot.grid_y);
+        grid_spots[ serialize_key_from_coordinates(spot.grid_x, spot.grid_y) ] = spot;
     }
-    for (var i = 0; i < spots_len; i++) {
-                        var spot = jsondata.spots[i];
-                        var spot_to_the_under = spot.grid_y + 1;
-                        var spot_to_the_under_key = spot.grid_x + "," + spot_to_the_under;
-                        add_neightbour_line(spot, spot_to_the_under_key, grid_spots);
-                        var spot_to_the_right_x = spot.grid_x + 1;
-                        var spot_to_the_right_key = spot_to_the_right_x +  "," + spot.grid_y;
-                        add_neightbour_line(spot, spot_to_the_right_key, grid_spots);
+    function add_circle(spot, circleLayer, connectionLineLayer) {
+        circleLayer.activate();
+        var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), radius);
+        circle.neighbours = [];
+        circle.fillColor = 'red';
+        circle.visible = true;
+        // To make it easy change the original data when the circle is being dragged,
+        // we store a reference to the original spot data.
+        circle.spot = spot; 
+        circle.onMouseDown = function (event) {
+            console.log("circle.onMouseDown" , "event.point.x = ", event.point.x , "event.point.y = ", event.point.y);
+        };
+        return circle;
     }
     for (var i = 0; i < spots_len; i++) {
         var spot = jsondata.spots[i];
-        var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), radius);
-        circle.fillColor = 'red';
-        circle.visible = true;
-        circles.push(circle);
-        circle.onMouseDown = function (event) {
-            console.log("circle.onMouseDown" , "event.point.x = ", event.point.x , "event.point.y = ", event.point.y);          
-        };
-    }  
+        var circle = add_circle(spot, circleLayer);
+        var coord_as_string =                           serialize_key_from_coordinates(spot.grid_x, spot.grid_y);
+        circles[ coord_as_string ] = circle;
+    }
+    for (var i = 0; i < spots_len; i++) {
+        var spot = jsondata.spots[i];
+        var circle = get_circle_from_spot(spot, circles);
+
+        var spot_to_the_under = spot.grid_y + 1;
+        var spot_to_the_under_key = spot.grid_x + "," + spot_to_the_under;
+        add_neightbour_line(spot, spot_to_the_under_key, grid_spots, circles, connectionLineLayer);
+
+        var spot_to_the_right_x = spot.grid_x + 1;
+        var spot_to_the_right_key = spot_to_the_right_x +  "," + spot.grid_y;
+        add_neightbour_line(spot, spot_to_the_right_key, grid_spots, circles, connectionLineLayer);
+    }
 };
 var hit_item = null;
+
+function reset_line_ends_from_spot(line) {
+    // Due to a bug with removeSegments()
+    // https://github.com/paperjs/paper.js/issues/815
+    // we have to use Paper.js 0.9.24 instead of Paper.js 0.9.25.
+    // As of 2016-05-11 Paper.js 0.9.26 has not yet been released.
+    // When it gets released we should try to upgrade.
+    line.removeSegments();
+    var seg = [new paper.Point(line.from_spot.pixel_x, line.from_spot.pixel_y),
+               new paper.Point(line.to_spot.pixel_x, line.to_spot.pixel_y)];
+    line.addSegments(seg);
+}
+
 var drag_handler = function(event) {
     if (hit_item) {
+        window.viewer.setMouseNavEnabled(false);
         var transformed_point1 = paper.view.viewToProject(new paper.Point(0,0));
         var transformed_point2 = paper.view.viewToProject(new paper.Point(event.delta.x, event.delta.y));
-        hit_item.position = hit_item.position.add(transformed_point2.subtract(transformed_point1));
-        window.viewer.setMouseNavEnabled(false);
+        var diff = transformed_point2.subtract(transformed_point1);
+        hit_item.spot.pixel_x += diff.x;
+        hit_item.spot.pixel_y += diff.y;
+        // Instead of setting the position to a new point we could also do: "hit_item.position = hit_item.position.add(diff);"
+        // That might be faster, but resetting from original data is safer.
+        hit_item.position = new paper.Point(hit_item.spot.pixel_x, hit_item.spot.pixel_y);
+        for (var i = 0; i < hit_item.neighbours.length; i++) {
+            reset_line_ends_from_spot(hit_item.neighbours[i]);
+        }
         paper.view.draw();
     }
 };
@@ -76,14 +127,17 @@ var dragEnd_handler = function(event) {
     }
     hit_item = null;
 };
-var press_handler = function(event) {
-    hit_item = null;
-    var transformed_point = paper.view.viewToProject(new paper.Point(event.position.x, event.position.y));
-    var hit_test_result = paper.project.hitTest(transformed_point);
-    if (hit_test_result) {
-        hit_item = hit_test_result.item;
-    }
+
+function savejson(alink) {
+    var url = "data:application/json;charset=utf-8,"  + encodeURIComponent(JSON.stringify(jsondata));
+    alink.href = url;
 };
+
+var toggleShowLinesFunc = null;
+function toggleShowLines(checkbox) {
+    toggleShowLinesFunc(checkbox.checked);
+};
+
 window.onload = function() {
     this.viewer = OpenSeadragon({
         id: "osd",
@@ -95,28 +149,43 @@ window.onload = function() {
         zoomPerScroll: 1.8
     });
     var overlay = this.viewer.paperjsOverlay();
-    var paint_circles_from_jsonfile = function(overlay, event) {
+    var circleLayer = new paper.Layer();
+    //    circleLayer.name = "circleLayer";
+    var connectionLineLayer = new paper.Layer();
+    //    connectionLineLayer.name = "connectionLineLayer";
+    toggleShowLinesFunc = function (connectionLineLayer, visible) {
+        connectionLineLayer.visible = visible;
+        paper.view.draw();
+    }.bind(null, connectionLineLayer);
+    var press_handler = function(circleLayer, event) {
+        hit_item = null;
+        var transformed_point = paper.view.viewToProject(new paper.Point(event.position.x, event.position.y));
+        var hit_test_result = circleLayer.hitTest(transformed_point);
+        if (hit_test_result) {
+            hit_item = hit_test_result.item;
+        }
+    }.bind(null, circleLayer);
+    var paint_circles_from_jsonfile = function(circleLayer, connectionLineLayer, overlay, event) {
         overlay.resize();
         overlay.resizecanvas();
         var xhr = new XMLHttpRequest();
         xhr.open('GET', "spots.json");
-        xhr.onload = function(overlay) {
+        xhr.onload = function(circleLayer, connectionLineLayer, overlay) {
             if (xhr.status === 200) {
-                data = JSON.parse(xhr.responseText);
-                paintCircles(data, overlay);
+                jsondata = JSON.parse(xhr.responseText);
+                paintCircles(jsondata, circleLayer, connectionLineLayer, overlay);
             } else {
                 alert('Could not download json. xhr.status = ' + xhr.status);
             }
-        }.bind(null, overlay);
+        }.bind(null, circleLayer, connectionLineLayer, overlay);
         xhr.send();
-    }.bind(null, overlay);
+    }.bind(null, circleLayer, connectionLineLayer, overlay);
     new OpenSeadragon.MouseTracker({
         element: this.viewer.canvas,
         pressHandler: press_handler,
         dragHandler: drag_handler,
         dragEndHandler: dragEnd_handler
     }).setTracking(true);
-    
     this.viewer.addTiledImage({
         tileSource: "http://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
         x: 0,
@@ -127,10 +196,14 @@ window.onload = function() {
         overlay.resize();
         overlay.resizecanvas();
         //    paper.view.draw();
-        console.log("circles[0]=", circles[0]);
-    };   
+    };
 };
 
         </script>
+
+    <label for="showLines" >show connection lines</label><input id="showLines" type="checkbox" onchange="toggleShowLines(this)" checked="true">
+    <br/>
+    
+    <a href="#"   onclick="savejson(this)" download="data.json" id="saveJSON" >save json</a>
     </body>
 </html>
