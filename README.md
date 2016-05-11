@@ -13,5 +13,6 @@ with mouse lasso. The selected objects should also be draggable.
 
 Demo:
 Drag some circles with the mouse:
-http://eriksjolund.github.io/osd-spot-viewer/drag_circles.html
+http://eriksjolund.github.io/osd-spot-viewer/adjust_spots.html
 
+(The circles are connected by grid lines in the example):
