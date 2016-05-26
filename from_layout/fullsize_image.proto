@@ -1,0 +1,39 @@
+package fullsize_image_proto;
+
+import public "fileformat_common.proto";
+
+// This enumeration describes the different types of photos that can be stored in this file format.
+enum PhotoType {
+
+   // Histology type
+   HE = 1;
+   
+   // Colored spots type
+   SPOTS = 2;
+}
+
+// This enumeration describes the different types of image file format supported by this file format.
+enum ImageFileFormat {
+
+  // JPEG image file format type  (MIME media type "image/jpeg")
+  JPEG = 1;
+
+  // PNG image file format type   (MIME media type "image/png")
+  PNG = 2;
+}
+
+message InterestingRectangle {
+  repeated uint32 rectangleCoordinates = 1; // should be 4 coordinates
+}
+
+
+message FullSizeImage {
+  required PhotoType photoType = 1;
+  required ImageFileFormat imageFileFormat = 2;
+  required uint32 imageWidth = 3;
+  required uint32 imageHeight = 4;
+  repeated float imageAlignment = 5;
+  optional InterestingRectangle interestingRectangle = 6; // If not present, interestingRectangle is assumed to be the same size as the full image size.
+  // unit: PixelDimensionsT
+  optional fileformat_common_proto.FileRegion photoFileData = 7;
+}

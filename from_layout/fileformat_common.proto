@@ -1,0 +1,11 @@
+package fileformat_common_proto;
+
+message HeaderSize {
+  required fixed32 headerSize = 1;
+}
+
+message FileRegion {
+   required uint64 regionOffset = 1;
+   required uint64 regionSize = 2;
+}
+

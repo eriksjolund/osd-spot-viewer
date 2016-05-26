@@ -1,0 +1,16 @@
+package tiled_image_proto;
+
+import public "fileformat_common.proto";
+import public "fullsize_image.proto";
+
+message TiledImage {
+  repeated fileformat_common_proto.FileRegion tiles = 1;
+}
+
+message TileConversion {
+  required uint32 tileSize = 1;
+  required uint32 tileOverlap = 2;
+  required fullsize_image_proto.ImageFileFormat imageFileFormat = 3;
+  repeated TiledImage tiledImages = 4;
+}
+

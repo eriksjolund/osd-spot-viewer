@@ -1,0 +1,114 @@
+package st_exp_proto;
+
+import public "fileformat_common.proto";
+import public "fullsize_image.proto";
+import public "tiled_image.proto";
+
+
+// Keep the typedefs in sync with the typedefs in
+
+// feature_datamodel/include/feature_datamodel/datamodel.h
+
+//using PixelDimensionsT = UInt32;
+//using HitsT = UInt32;
+//using SpotIdT = UInt32;
+//using SpotCoordT = UInt16;
+//using ImageAlignmentT = Float64;
+//using PhysicalDistanceT = Float64;
+
+
+message Spot {
+  // We limit the total number of spots to (2^32-1) as the spot id is uint32_t.
+  // Therefore we limit the grid coordinates to be max (2^16-1).
+  required uint32 xCoordGrid = 1;  // integer in range: 0 ... (2^16-1) 
+  required uint32 yCoordGrid = 2;  // integer in range: 0 ... (2^16-1)
+  required float xCoordPhyscial = 3;  // millimeter
+  required float yCoordPhyscial = 4;  // millimeter
+  required string barcode = 5;
+}
+
+message Spots {
+  repeated Spot spots = 1;
+}
+
+message CountPerSpot {
+  // We expect: count_size() to be equal to the number of spots
+  repeated uint32 count = 1; 
+}
+
+message ReadCounts {
+  // The information stored in this message is
+  // redundant information that can be computed from the GeneHit data
+  required fileformat_common_proto.FileRegion totalReads = 1;  // serialized CountPerSpot message
+  // The array of uniqueGenes represent different definitions of "unique gene".
+  // The first element of the array has a definition of "unique gene" meaning at least one hit.
+  // The second element of the array has a definition of "unique gene" meaning at least two hits.
+  // And so forth.
+  repeated fileformat_common_proto.FileRegion uniqueGenes = 2; // serialized CountPerSpot messages
+}
+
+message GeneNames {
+// We might want to change this to a map instead:
+// map<string, uint64> geneNames = 1;
+
+repeated string geneNames = 1;
+}
+
+message GeneHit {
+    // The two lists "zeroHitsSkipped" and "hits" have
+    // the same length.
+    // Only non-zero gene hit counts are listed.
+    //
+    // Example:
+    //
+    // spot id 0 has 0 gene hits
+    // spot id 1 has 3 gene hits
+    // spot id 2 has 2 gene hits
+    // spot id 3 has 4 gene hits
+    // spot id 4 has 0 gene hits
+    // spot id 5 has 0 gene hits
+    // spot id 6 has 1 gene hits
+    // spot id 7 has 0 gene hits    
+    //
+    // would be translated to
+    //
+    // zeroHitsSkipped = [ 1, 0, 0, 2 ]
+    // hits = [ 3, 2, 4, 1 ]
+    //
+    // This encoding deals well with the two extreme cases:
+    //
+    // If all spots would have non-zero gene hit counts for
+    // a certain gene, the list "zeroHitsSkipped" would only
+    // contain zeroes, and thus would be easily compressible.
+    //
+    // If all spots would have zero gene hit counts for a
+    // certain gene, the lists "zeroHitsSkipped" and
+    // "hits" would be empty.
+
+  // We expect: zerohitsskipped_size() == hits_size()
+   repeated uint32 zeroHitsSkipped = 1 [packed=true];
+   repeated uint32 hits = 2 [packed=true];
+}
+
+message PhysicalDimensions {
+ // describe the physical dimensions of the experiment like
+ // coordinates of a rectangle containing the cell tissue.
+ // Or maybe a polygon vector is better.
+ // Unit could be millimeter.
+}
+
+message CommonData {
+  required fileformat_common_proto.FileRegion spots = 1; // serialized Spots message
+  required PhysicalDimensions physicalDimensions = 2;
+  required fileformat_common_proto.FileRegion geneNames = 3; // serialized GeneNames message
+  // The information stored in readCounts is reduntant information
+  // and can be computed from the geneHits
+  required ReadCounts readCounts = 4;
+  repeated fileformat_common_proto.FileRegion geneHits = 5; // serialized GeneHit messages
+}
+
+message Header {
+  required CommonData commonData = 1;
+  repeated fullsize_image_proto.FullSizeImage images = 2;
+  repeated tiled_image_proto.TileConversion tileConversions = 3;
+}
