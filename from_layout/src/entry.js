@@ -142,7 +142,7 @@ function startFunction(obj_this) {
 function estimate_cutoff(genehit_array) {
     // TODO: write this function.
     // Right now it just returns an arbitrary value.
-    return 10;
+    return 4;
 }
 
 function read_fileregion(callback, file_region, local_st_file) {
