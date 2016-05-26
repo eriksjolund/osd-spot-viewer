@@ -42,7 +42,7 @@ var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circ
         connectionLineLayer.activate();
         var path = new paper.Path.Line(from, to);
         path.strokeColor = 'red';
-        path.strokeWidth = 50;
+        path.strokeWidth = 5;
         path.visible = true;
         path.from_spot = current_spot;
         path.to_spot = to_spot;
@@ -53,7 +53,7 @@ var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circ
 
 var jsondata = null;
 function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circles) {
-    var radius = 200;
+    var radius = 20;
     var spots_len = jsondata.spots.length;
     // grid_spots is a Javascript object that provides a mapping between
     // logical grid coordinates and the json spot data.
@@ -75,9 +75,11 @@ function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circl
         // To make it easy change the original data when the circle is being dragged,
         // we store a reference to the original spot data.
         circle.spot = spot; 
-        circle.onMouseDown = function (event) {
+                        /*
+                        circle.onMouseDown = function (event) {
             console.log("circle.onMouseDown" , "event.point.x = ", event.point.x , "event.point.y = ", event.point.y);
-        };
+                        };
+
         circle.onMouseEnter = function (circle, event) {
             circle.spot_is_selected = true;
                         circle.fillColor = 'green';
@@ -87,7 +89,8 @@ function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circl
             circle.spot_is_selected = false;
                         circle.fillColor = 'red';
                                     paper.view.draw();
-        }.bind(null, circle);
+                        }.bind(null, circle);
+                        */
         return circle;
     }
     for (var i = 0; i < spots_len; i++) {
@@ -203,7 +206,8 @@ window.onload = function() {
     });
     var overlay = this.viewer.paperjsOverlay();
 
-    var connectionLineLayer = new paper.Layer();
+                                            var connectionLineLayer = new paper.Layer();
+                                                    connectionLineLayer.visible = false;
     var circleLayer = new paper.Layer();
     document.getElementById('showLines').onchange=function(connectionLineLayer, visible) {
         connectionLineLayer.visible = visible.target.checked;
@@ -286,7 +290,7 @@ window.onload = function() {
         overlay.resize();
         overlay.resizecanvas();
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', "spots.json");
+        xhr.open('GET', "spots_30.json");
         xhr.onload = function(circleLayer, connectionLineLayer, overlay, circles) {
             if (xhr.status === 200) {
                 jsondata = JSON.parse(xhr.responseText);
@@ -321,7 +325,7 @@ window.onload = function() {
 
         </script>
         <div>
-            <label for="showLines" >show connection lines</label> <input  id="showLines" type="checkbox"  checked="true">
+            <label for="showLines" >show connection lines</label> <input  id="showLines" type="checkbox" >
         </div>
 
         <div class="btn-group" data-toggle="buttons" id="modeSelector">
