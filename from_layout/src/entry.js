@@ -120,17 +120,7 @@ function startFunction(obj_this) {
             var _this = this;
 	    this.image = new Image();
 
-	    this.image.onload = function(){
-		_this.finish( true );
-	    };
-	    this.image.onabort = this.image.onerror = function() {
-		_this.errorMsg = "Image load aborted";
-		_this.finish( false );
-	    };
-	    this.jobId = window.setTimeout( function() {
-		_this.errorMsg = "Image load exceeded timeout";
-		_this.finish( false );
-	    }, this.timeout);
+            setupImageCallbacks(this);
 
             this.image.src =  data_url;
             
