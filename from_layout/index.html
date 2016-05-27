@@ -28,9 +28,9 @@ window.protobuf_message_parsers.spots =  builder.build("st_exp_proto").Spots;
 window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").GeneNames;
      
       </script>
-    <input type="file" id="input" multiple onchange="handleSelectedFiles(this.files)">
-    <input type="file" multiple onchange="handleLayoutFiles(this.files)">
-    <button  onclick="add_osd_window()">add section</button>
+    <label for="experiment_files_input">Select experiment files:</label><input type="file" id="experiment_files_input" multiple onchange="handleSelectedFiles(this.files)"><br/>
+    <label for="layout_files_input">Select layout files:</label><input type="file" id="layout_files_input" onchange="handleLayoutFiles(this.files)">
+<!--    <button  onclick="add_osd_window()">add section</button>-->
     <div id="osd_windows">      
   </body>
 </html>
