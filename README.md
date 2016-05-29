@@ -6,7 +6,7 @@ Demonstrating how to use [OpenSeadragon](http://openseadragon.github.io/) to cre
 displaying colored circles on top of a high resolution photo. The photo tiles and the circle colors
 are retrieved from a single data file.
 
-Three different software designs have been tried out:
+The problem can be solved by at least four different software designs:
 
 1. Painting the circles with https://github.com/eriksjolund/OpenSeadragonPaperjsOverlay. (javascript running in web browser)
 2. Painting the circles on top of the image tiles as they are retrieved. (javascript running in web browser)
