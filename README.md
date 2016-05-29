@@ -10,11 +10,11 @@ Three different software designs have been tried out:
 
 1. Painting the circles with https://github.com/eriksjolund/OpenSeadragonPaperjsOverlay. (javascript running in web browser)
 2. Painting the circles on top of the image tiles as they are retrieved. (javascript running in web browser)
-3. Painting the circles on top of the image tiles as they are retrieved. (multi-threaded desktop application made with [nw.js](http://nwjs.io/) + [node.js](https://nodejs.org/))
+3. Like 2 but painting the circles inside Web Workers
+4. Painting the circles on top of the image tiles as they are retrieved. (multi-threaded desktop application made with [nw.js](http://nwjs.io/) + [node.js](https://nodejs.org/) + [Nan::AsyncWorker](https://github.com/nodejs/nan/blob/master/doc/asyncworker.md#api_nan_async_worker) + [cairo](https://www.cairographics.org/))
 
-
-
-Currently the git repo contains code for design nr 1 and nr 2 but not for design nr 3.
+The design approaches 1,2 and 4 have been tried out, but not design nr 3.
+Currently the git repo contains code for design nr 1 and nr 2 but code for design nr 4 has not yet been included.
 
 # Demos
 ## Viewing gene expression
