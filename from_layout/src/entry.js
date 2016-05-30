@@ -93,10 +93,8 @@ function startFunction(obj_this) {
         var tile_img = document.createElement("img");
         var uint8_array = new Uint8Array( buffer);            
         var colors = window.colors[color_index];
-
-        
+       
         var tile_base64 = btoa(String.fromCharCode.apply(null, uint8_array));
-
 	tile_img.onload = function(tile_img, colors) {
             var canvas = document.createElement("canvas");
             var ctx = canvas.getContext("2d");
@@ -134,6 +132,7 @@ function estimate_cutoff(genehit_array) {
     // Right now it just returns an arbitrary value.
     return 4;
 }
+
 
 function read_fileregion(callback, file_region, local_st_file) {
     var start_pos = local_st_file.file_regions_start_pos + file_region.regionOffset.low;
@@ -212,11 +211,7 @@ function calculate_spot_colors(callback, gene_id, local_st_file, number_of_spots
     }.bind(null, callback), file_region, local_st_file);
 }
 
-function parse_file(local_st_file) {
-    var file_reader = new FileReader();
-    var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
-    
-    file_reader.onloadend = function(local_st_file, evt) {
+var parse_preheader = function(local_st_file, magic, evt) {
         if (evt.target.readyState == FileReader.DONE) {
             var len = magic.length;
             for (var i = 0; i < len; i++) {
@@ -227,35 +222,43 @@ function parse_file(local_st_file) {
             var endslice = evt.target.result.slice(magic.length, magic.length + 5); // 5 is the serialized byte length of the HeaderSize message
             var msg = window.protobuf_message_parsers.header_size_message.decode(endslice);
             var startpos =  magic.length + 5 + 3;  // 3 is just padding
-            var header_blob = local_st_file.file.slice(startpos, startpos + msg.headerSize);
+            var header_slice = local_st_file.file.slice(startpos, startpos + msg.headerSize);
             var tmp_pos = startpos + msg.headerSize;
-            if ( tmp_pos % 8 != 0) {
+            if (tmp_pos % 8 != 0) {
                 tmp_pos = tmp_pos + 8 - (tmp_pos % 8);
             }
             // align
             local_st_file.file_regions_start_pos = tmp_pos;
-            file_reader.onloadend = function(local_st_file, evt) {
-                if (evt.target.readyState == FileReader.DONE) {
-                    local_st_file.parsed_header = window.protobuf_message_parsers.header_message.decode(evt.target.result);
-                    console.log("a1");
-                    read_fileregion(function (local_st_file, buffer) {
-                        local_st_file.spots = window.protobuf_message_parsers.spots.decode(buffer);
-                    }.bind(null, local_st_file), local_st_file.parsed_header.commonData.spots, local_st_file);
-                    console.log("a2");
-                    read_fileregion(function (local_st_file2, buffer) {
-                        local_st_file2.gene_names_array = window.protobuf_message_parsers.gene_names.decode(buffer).geneNames;
-                        local_st_file2.gene_names_dictionary = {};
-                        for (var i = 0; i < local_st_file2.gene_names_array.length; i++) {
-                            local_st_file2.gene_names_dictionary[ local_st_file2.gene_names_array[i] ] = i;
-                        }
-                    }.bind(null, local_st_file), local_st_file.parsed_header.commonData.geneNames, local_st_file);
-                }
-            }.bind(null, local_st_file);
-            file_reader.readAsArrayBuffer(header_blob);
+            var file_reader = new FileReader();
+            file_reader.onloadend = parse_header.bind(null, local_st_file);
+            file_reader.readAsArrayBuffer(header_slice);
         }
-    }.bind(null, local_st_file);
-    var preheader_blob = local_st_file.file.slice(0, magic.length + 8);
-    file_reader.readAsArrayBuffer(preheader_blob);
+}
+
+var parse_header = function(local_st_file, evt) {
+    if (evt.target.readyState == FileReader.DONE) {
+        local_st_file.parsed_header = window.protobuf_message_parsers.header_message.decode(evt.target.result);
+        console.log("a1");
+        read_fileregion(function (local_st_file, buffer) {
+            local_st_file.spots = window.protobuf_message_parsers.spots.decode(buffer);
+        }.bind(null, local_st_file), local_st_file.parsed_header.commonData.spots, local_st_file);
+        console.log("a2");
+        read_fileregion(function (local_st_file2, buffer) {
+            local_st_file2.gene_names_array = window.protobuf_message_parsers.gene_names.decode(buffer).geneNames;
+            local_st_file2.gene_names_dictionary = {};
+            for (var i = 0; i < local_st_file2.gene_names_array.length; i++) {
+                local_st_file2.gene_names_dictionary[ local_st_file2.gene_names_array[i] ] = i;
+            }
+        }.bind(null, local_st_file), local_st_file.parsed_header.commonData.geneNames, local_st_file);
+    }
+};
+
+function parse_file(local_st_file) {
+    var file_reader = new FileReader();
+    var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
+    file_reader.onloadend = parse_preheader.bind(null, local_st_file, magic);
+    var preheader_slice = local_st_file.file.slice(0, magic.length + 8);
+    file_reader.readAsArrayBuffer(preheader_slice);
 }
 
 var  handleSelectedFiles = function(files) {
