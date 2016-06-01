@@ -24,7 +24,6 @@
 // Author: Erik Sjolund
 var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
 
-
 class ProtoBufLoader {
     constructor() {
         this.builder = new Promise(function(resolve, reject) {
@@ -39,7 +38,7 @@ class ProtoBufLoader {
 var protobuf_loader_global = new ProtoBufLoader();
 
 function num_levels(width, height) {
-    return  Math.ceil(Math.log2(Math.max(width, height))) + 1;
+    return Math.ceil(Math.log2(Math.max(width, height))) + 1;
 }
 
 function scaled_tile_size(num_levels_, level, tile_size) {
@@ -61,7 +60,7 @@ function num_tiles_level(width, height, level, tile_size) {
 
 function calculate_tile_id(x_coord, y_coord, level, width, height, tile_size) {
     var result = 0;
-    for (var i=0; i< level; i++) {
+    for (var i = 0; i < level; i++) {
         result = result + num_tiles_level(width, height, i, tile_size);
     }
     var num_l = num_levels(width, height);
@@ -351,7 +350,7 @@ var  handleExperimentFiles = function(protobuf_loader, files) {
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
         var slice_loader = new LocalSliceLoader(file);
-        window.local_files[ file.name ] =  new StExpProtobufFile(slice_loader, protobuf_loader);
+        window.local_files[ file.name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
     }
 }.bind(null, protobuf_loader_global);
 
@@ -455,7 +454,7 @@ function add_osd_window_from_layout(layout) {
                     var genehit_array = genehits_as_array(genehit_decoded, spots_decoded.spots.length);
                     var color_array = calculate_spot_colors_from_genehit_array(genehit_array);
                     add_layout_image(viewer, overlay, layoutimage.datafile, layoutimage.rendering.gene_name, layoutimage.x, layoutimage.y, header_decoded.images, header_decoded.tileConversions, color_array);
-                }.bind(null,  layoutimage)
+                }.bind(null, layoutimage)
             );
         }
     }
