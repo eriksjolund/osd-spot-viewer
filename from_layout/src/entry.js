@@ -22,7 +22,21 @@
 // SOFTWARE.
 //
 // Author: Erik Sjolund
+var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
 
+
+class ProtoBufLoader {
+    constructor() {
+        this.builder = new Promise(function(resolve, reject) {
+            var ProtoBuf = dcodeIO.ProtoBuf;       
+            ProtoBuf.loadProtoFile("st_exp.proto", function(err, builder) {
+                resolve(builder.build());
+            });
+        });      
+    }
+}
+
+var protobuf_loader_global = new ProtoBufLoader();
 
 function num_levels(width, height) {
     return  Math.ceil(Math.log2(Math.max(width, height))) + 1;
@@ -45,7 +59,7 @@ function num_tiles_level(width, height, level, tile_size) {
     return num_tiles;
 }
 
-function tile_id(x_coord, y_coord, level, width, height, tile_size) {
+function calculate_tile_id(x_coord, y_coord, level, width, height, tile_size) {
     var result = 0;
     for (var i=0; i< level; i++) {
         result = result + num_tiles_level(width, height, i, tile_size);
@@ -66,66 +80,69 @@ function coord_relative_tile(coord_dzi, coord_spot, tile_size, tile_overlap, lev
     return result_coord;
 }
 
-
 function startFunction(obj_this) {
-    var _this = obj_this;
-    var numbers = obj_this.src.split("/");
-    var filename = numbers[0];
-    var image_index = parseInt(numbers[1]);
-    var tile_conversion_index = parseInt(numbers[2]);
-    var color_index = parseInt(numbers[3]);           
-    var level = parseInt(numbers[4]);
-    var xcoord = parseInt(numbers[5]);
-    var ycoord = parseInt(numbers[6]);
+    var fields = obj_this.src.split("/");
+    var args = {};
+    args.filename = fields[0];
+    args.image_index = parseInt(fields[1]);
+    args.tile_conversion_index = parseInt(fields[2]);
+    args.osd_layout_image_colors_index = parseInt(fields[3]);           
+    args.level = parseInt(fields[4]);
+    args.xcoord = parseInt(fields[5]);
+    args.ycoord = parseInt(fields[6]);
     
-    var file_reader = new FileReader();
-    var local_st_file = window.local_files[filename];
-    var full_image = local_st_file.parsed_header.images[image_index];
-    var full_image_width = full_image.imageWidth;
-    var full_image_height = full_image.imageHeight;
-    var tile_conversion = local_st_file.parsed_header.tileConversions[tile_conversion_index];
-    var tile_size = tile_conversion.tileSize;
-    var tile_id_ = tile_id(xcoord, ycoord, level, full_image_width, full_image_height, tile_size);
-    var file_region = tile_conversion.tiledImages[image_index].tiles[tile_id_];
+    var local_st_file = window.local_files[args.filename];
+    // local_st_file.header should already be fullfilled by now. But nonetheless then() is used. Maybe change this somehow in the future ...
 
-    read_fileregion(function (color_index, buffer) {
+    local_st_file.header.then(
+        function (args, local_st_file, header_decoded) {          
+            var full_image = header_decoded.images[args.image_index];
+            var full_image_width = full_image.imageWidth;
+            var full_image_height = full_image.imageHeight;
+            var tile_conversion = header_decoded.tileConversions[args.tile_conversion_index];
+            var tile_size = tile_conversion.tileSize;
+            var tile_id = calculate_tile_id(args.xcoord, args.ycoord, args.level, full_image_width, full_image_height, tile_size);
 
-        var tile_img = document.createElement("img");
-        var uint8_array = new Uint8Array( buffer);            
-        var colors = window.colors[color_index];
-       
-        var tile_base64 = btoa(String.fromCharCode.apply(null, uint8_array));
-	tile_img.onload = function(tile_img, colors) {
-            var canvas = document.createElement("canvas");
-            var ctx = canvas.getContext("2d");
-            ctx.canvas.width = tile_img.width;
-            ctx.canvas.height = tile_img.height;
-            ctx.drawImage(tile_img, 0, 0, tile_img.width, tile_img.height);
-            var level_factor = Math.pow(2, num_levels(full_image_width, full_image_height) - level - 1);
-            var circle_radius = 95 / level_factor;
-            for (var i = 0; i < 900; i++) {
-                var spot = local_st_file.spots.spots[i];
-                ctx.beginPath();
-                var x_circle = coord_relative_tile(xcoord, spot.xCoordPhyscial, tile_conversion.tileSize, tile_conversion.tileOverlap, level_factor);
-                var y_circle = coord_relative_tile(ycoord, spot.yCoordPhyscial, tile_conversion.tileSize, tile_conversion.tileOverlap, level_factor);                    
-                ctx.arc(x_circle, y_circle, circle_radius, 0, 2 * Math.PI, false);
-                ctx.closePath();
-                var col = colors[i];
-                ctx.fillStyle = "rgba(" + col[0] + ", " + col[1] + "," + col[2] + "," +  col[3] + ")";
-                ctx.fill();
-            }
-            var data_url = canvas.toDataURL();
-            var _this = this;
-	    this.image = new Image();
-
-            setupImageCallbacks(this);
-
-            this.image.src =  data_url;
-            
-        }.bind(this, tile_img, colors)
-        tile_img.src =  "data:image/jpeg;base64," + tile_base64;
-    }.bind(obj_this, color_index), file_region, local_st_file);
-}
+            var file_region = tile_conversion.tiledImages[args.image_index].tiles[tile_id];
+            var tile = get_tile(tile_id, args.image_index, args.tile_conversion_index, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
+            var color_array = window.osd_layout_image_colors[args.osd_layout_image_colors_index];
+            Promise.all([local_st_file.spots, tile]).then(
+                function(color_array,  x_coord, y_coord, level, tile_size, tile_overlap, full_image_width, full_image_height, values) {
+                    var spots_decoded = values[0];
+                    var tile_buff = values[1];
+                    var tile_img = document.createElement("img");
+                    var uint8_array = new Uint8Array(tile_buff);            
+                    var tile_base64 = btoa(String.fromCharCode.apply(null, uint8_array));
+	            tile_img.onload = function(tile_img, color_array, x_coord, y_coord, level, tile_size, tile_overlap, full_image_width, full_image_height, spots_decoded) {
+                        var canvas = document.createElement("canvas");
+                        var ctx = canvas.getContext("2d");
+                        ctx.canvas.width = tile_img.width;
+                        ctx.canvas.height = tile_img.height;
+                        ctx.drawImage(tile_img, 0, 0, tile_img.width, tile_img.height);
+                        var level_factor = Math.pow(2, num_levels(full_image_width, full_image_height) - level - 1);
+                        var circle_radius = 95 / level_factor;
+                        for (var i = 0; i < 900; i++) {
+                            var spot = spots_decoded.spots[i];
+                            ctx.beginPath();
+                            var x_circle = coord_relative_tile(x_coord, spot.xCoordPhyscial, tile_size, tile_overlap, level_factor);
+                            var y_circle = coord_relative_tile(y_coord, spot.yCoordPhyscial,  tile_size, tile_overlap, level_factor);                    
+                            ctx.arc(x_circle, y_circle, circle_radius, 0, 2 * Math.PI, false);
+                            ctx.closePath();
+                            var col = color_array[i];
+                            ctx.fillStyle = "rgba(" + col[0] + ", " + col[1] + "," + col[2] + "," +  col[3] + ")";
+                            ctx.fill();
+                        }
+                        var data_url = canvas.toDataURL();
+	                this.image = new Image();
+                        setupImageCallbacks(this);
+                        this.image.src = data_url;
+                    }.bind(this, tile_img, color_array, x_coord, y_coord, level, tile_size, tile_overlap, full_image_width, full_image_height, spots_decoded)
+                    tile_img.src =  "data:image/jpeg;base64," + tile_base64;                  
+                }.bind(this, color_array, args.xcoord, args.ycoord, args.level, tile_size, tile_conversion.tileOverlap, full_image_width, full_image_height)
+            );
+        }.bind(obj_this, args, local_st_file)
+    );
+} 
 
 function estimate_cutoff(genehit_array) {
     // TODO: write this function.
@@ -133,35 +150,163 @@ function estimate_cutoff(genehit_array) {
     return 4;
 }
 
-
-function read_fileregion(callback, file_region, local_st_file) {
-    var start_pos = local_st_file.file_regions_start_pos + file_region.regionOffset.low;
-    var blob = local_st_file.file.slice(start_pos, start_pos + file_region.regionSize.low); 
-    var file_reader = new FileReader();
-    file_reader.onloadend = function(evt) {
-        if (evt.target.readyState == FileReader.DONE) {
-            callback(evt.target.result);
-        }
+class LocalSliceLoader {
+    constructor(file_api_file) {
+        this.file = file_api_file;
     }
-    file_reader.readAsArrayBuffer(blob);
+    get_slice(start_pos, size) {
+        var promise = new Promise(function(file, resolve, reject) {
+            var file_reader = new FileReader();
+            var blob = file.slice(start_pos, start_pos + size); 
+            file_reader.onloadend = function(evt) {
+                if (evt.target.readyState == FileReader.DONE) {
+                    resolve(evt.target.result);
+                } else {
+                    reject(Error("could not read local file"));
+                }
+            }    
+            file_reader.onerror = function(evt) {
+                reject(Error("could not read local file (onerror)"));
+            }
+            file_reader.onabort = function(evt) {
+                reject(Error("could not read local file (onabort)"));
+            }
+            file_reader.readAsArrayBuffer(blob);
+        }.bind(null, this.file));
+        return promise;
+    }
 }
 
-// maybe remove this function:
-function read_fileregion_as_url(callback, file_region, local_st_file) {
-    var start_pos = local_st_file.file_regions_start_pos + file_region.regionOffset.low;
-    var blob = local_st_file.file.slice(start_pos, start_pos + file_region.regionSize.low); 
-    var file_reader = new FileReader();
-    file_reader.onloadend = function(evt) {
-        if (evt.target.readyState == FileReader.DONE) {
-            callback(evt.target.result);
-        }
-    }
-    file_reader.readAsDataURL(blob);
+function get_headersize(protobuf_loader, slice_loader) {
+    return Promise.all([protobuf_loader.builder, slice_loader.get_slice(magic.length, 5)]).then(function (values) {
+        var headersize_builder = values[0].fileformat_common_proto.HeaderSize;
+        var msg = headersize_builder.decode(values[1]);
+        return msg.headerSize;
+    });
 }
 
-function LocalStFile(file){
-    this.file = file; // File object
-    this.parsed_header = undefined;
+function get_header(headersize, protobuf_loader, slice_loader) {   
+    var slice = headersize.then(function(val) {
+        var startpos = header_start_pos(magic);
+        return slice_loader.get_slice(startpos, val);
+    });
+    return Promise.all([protobuf_loader.builder, slice]).then(function (values) {
+        var header_builder = values[0].st_exp_proto.Header;
+        var msg = header_builder.decode(values[1]);
+        return msg;
+    });
+}
+
+function get_fileregionslice(get_fileregion_func, headersize, header, slice_loader) {
+    return Promise.all([headersize, header]).then(
+        function (values) {
+            var headersize_decoded = values[0];
+            var header_decoded = values[1];
+            var file_region = get_fileregion_func(header_decoded);
+            var startpos = file_regions_start_pos(magic, headersize_decoded) + file_region.regionOffset.low;
+            var size = file_region.regionSize.low;
+            // assert ( file_region.regionOffset.high == 0 &&  file_region.regionSize.high == 0 ) TODO. fix this later. Now we assume the *.high values are 0. We should not do that.
+            return slice_loader.get_slice(startpos, size);
+        }
+    );
+}
+
+function get_decoded_fileregion(get_fileregion_func, get_builder_func, headersize, header, protobuf_loader, slice_loader) {
+    var slice = get_fileregionslice(get_fileregion_func, headersize, header, slice_loader);
+    return Promise.all([protobuf_loader.builder, slice]).then(function (values) {
+        var builder = get_builder_func(values[0]);
+        var msg = builder.decode(values[1]);
+        return msg;
+    });
+}
+
+function get_genenames(headersize, header, protobuf_loader, slice_loader) {
+    return get_decoded_fileregion(
+        function (header_decoded) {
+            return header_decoded.commonData.geneNames;
+        },
+        function (protobuf_loader_builder) {
+            return protobuf_loader_builder.st_exp_proto.GeneNames;
+        }, headersize, header, protobuf_loader, slice_loader);
+}
+
+function get_tile(tile_id, image_index, tile_conversion_index, headersize, header, protobuf_loader, slice_loader) {
+    return get_fileregionslice(
+        function (header_decoded) {
+            return header_decoded.tileConversions[tile_conversion_index].tiledImages[image_index].tiles[tile_id];          
+        }, headersize, header, slice_loader);
+}
+
+function get_genehit(gene_id, headersize, header, protobuf_loader, slice_loader) {
+    return get_decoded_fileregion(
+        function (header_decoded) {
+            return header_decoded.commonData.geneHits[gene_id];
+        },
+        function (protobuf_loader_builder) {
+            return protobuf_loader_builder.st_exp_proto.GeneHit;
+        }, headersize, header, protobuf_loader, slice_loader);
+}
+
+function get_genehit_from_genename(gene_name, genenames_dict, headersize, header, protobuf_loader, slice_loader) {
+    return genenames_dict.then(function(headersize, header, protobuf_loader, slice_loader, genenames_dict_decoded) {
+        var gene_id = genenames_dict_decoded[gene_name];
+        return get_genehit(gene_id, headersize, header, protobuf_loader, slice_loader);
+    }.bind(null, headersize, header, protobuf_loader, slice_loader));
+}
+
+function get_spots(headersize, header, protobuf_loader, slice_loader) {
+    return get_decoded_fileregion(
+        function (header_decoded) {
+            return header_decoded.commonData.spots;
+        },
+        function (protobuf_loader_builder) {
+            return protobuf_loader_builder.st_exp_proto.Spots;
+        }, headersize, header, protobuf_loader, slice_loader);
+}
+
+function calculate_spot_colors_from_genehit_array(gene_hit_array) {
+    var es_cutoff = estimate_cutoff(gene_hit_array);
+    var colors = [];
+    for (var i = 0; i < gene_hit_array.length; i++) {
+        if (gene_hit_array[i] <= es_cutoff) {
+            colors.push([0, 0, 0, 0]);
+        }
+        else {          
+            var alpha = gene_hit_array[i] / 30;
+            if (alpha > 1) {
+                alpha = 1;
+            }                 
+            colors.push([255, 0, 0, alpha]);
+        }
+    }
+    return colors;
+}
+
+function dictionary_from_string_array(string_array) {
+    var result = {};
+    
+    console.log("string_array.length=" +       string_array.length);
+    for (var i = 0; i < string_array.length; i++) {
+        result[ string_array[i] ] = i;
+    }
+   
+    // adding 15000 gene names to the dictionary took about 10 milliseconds on a desktop computer (intel core i7) from 2014
+    // If we require that the gene names should be alphabetically ordered, I guess we use a btree instead of a hash.
+    // Maybe something to look at in the future.
+
+    return result;
+}
+
+class StExpProtobufFile {
+    constructor(slice_loader, protobuf_loader) {
+        this.slice_loader = slice_loader;
+        this.protobuf_loader = protobuf_loader;
+        this.headersize = get_headersize(this.protobuf_loader, slice_loader);
+        this.header = get_header(this.headersize,this.protobuf_loader, slice_loader);
+        this.genenames = get_genenames(this.headersize, this.header, protobuf_loader, slice_loader);
+        this.genenames_dict = this.genenames.then(function(value) { return dictionary_from_string_array(value.geneNames) });
+        this.spots = get_spots(this.headersize, this.header, protobuf_loader, slice_loader);
+    }
 }
 
 function genehits_as_array(gene_hit_message, number_of_spots) {
@@ -183,92 +328,32 @@ function genehits_as_array(gene_hit_message, number_of_spots) {
     return gene_hit_array;
 }
 
-function filter_out_spots(callback, local_st_file, number_of_spots, filter_configuration) {
-}                     
-
-function calculate_spot_colors(callback, gene_id, local_st_file, number_of_spots) {
-    var file_region = local_st_file.parsed_header.commonData.geneHits[gene_id];
-
-    read_fileregion(function (callback, buffer) {
-        var gene_hit_message = window.protobuf_message_parsers.gene_hit.decode(buffer);
-        var gene_hits = genehits_as_array(gene_hit_message, number_of_spots);
-        var es_cutoff = estimate_cutoff(gene_hits);
-        var colors = [];
-        for (var i = 0; i < gene_hits.length; i++) {
-            if (gene_hits[i] <= es_cutoff) {
-                colors.push([ 0, 0, 0, 0 ]);
-            }
-            else {
-               
-                var alpha =  gene_hits[i] / 30;
-                if (alpha > 1) {
-                    alpha = 1;
-                }                 
-                colors.push([ 255, 0, 0, alpha ]);
-            }
-        }
-        callback(colors);
-    }.bind(null, callback), file_region, local_st_file);
+function header_start_pos(magic) {
+    var HeaderSize_message_length = 5;
+    var padding = 3; // To have it 8-byte aligned
+    return magic.length + 5 + padding; 
 }
 
-var parse_preheader = function(local_st_file, magic, evt) {
-        if (evt.target.readyState == FileReader.DONE) {
-            var len = magic.length;
-            for (var i = 0; i < len; i++) {
-                if (magic[i] != evt.target.result[i]) {
-                    console.log(" magic mismatch " + i );
-                }
-            }
-            var endslice = evt.target.result.slice(magic.length, magic.length + 5); // 5 is the serialized byte length of the HeaderSize message
-            var msg = window.protobuf_message_parsers.header_size_message.decode(endslice);
-            var startpos =  magic.length + 5 + 3;  // 3 is just padding
-            var header_slice = local_st_file.file.slice(startpos, startpos + msg.headerSize);
-            var tmp_pos = startpos + msg.headerSize;
-            if (tmp_pos % 8 != 0) {
-                tmp_pos = tmp_pos + 8 - (tmp_pos % 8);
-            }
-            // align
-            local_st_file.file_regions_start_pos = tmp_pos;
-            var file_reader = new FileReader();
-            file_reader.onloadend = parse_header.bind(null, local_st_file);
-            file_reader.readAsArrayBuffer(header_slice);
-        }
-}
-
-var parse_header = function(local_st_file, evt) {
-    if (evt.target.readyState == FileReader.DONE) {
-        local_st_file.parsed_header = window.protobuf_message_parsers.header_message.decode(evt.target.result);
-        console.log("a1");
-        read_fileregion(function (local_st_file, buffer) {
-            local_st_file.spots = window.protobuf_message_parsers.spots.decode(buffer);
-        }.bind(null, local_st_file), local_st_file.parsed_header.commonData.spots, local_st_file);
-        console.log("a2");
-        read_fileregion(function (local_st_file2, buffer) {
-            local_st_file2.gene_names_array = window.protobuf_message_parsers.gene_names.decode(buffer).geneNames;
-            local_st_file2.gene_names_dictionary = {};
-            for (var i = 0; i < local_st_file2.gene_names_array.length; i++) {
-                local_st_file2.gene_names_dictionary[ local_st_file2.gene_names_array[i] ] = i;
-            }
-        }.bind(null, local_st_file), local_st_file.parsed_header.commonData.geneNames, local_st_file);
+function align_to_8_bytes(pos) {
+    var tmp_pos = pos;
+    if (tmp_pos % 8 != 0) {
+        tmp_pos = tmp_pos + 8 - (tmp_pos % 8);
     }
-};
-
-function parse_file(local_st_file) {
-    var file_reader = new FileReader();
-    var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
-    file_reader.onloadend = parse_preheader.bind(null, local_st_file, magic);
-    var preheader_slice = local_st_file.file.slice(0, magic.length + 8);
-    file_reader.readAsArrayBuffer(preheader_slice);
+    return tmp_pos;
 }
 
-var  handleSelectedFiles = function(files) {
+function file_regions_start_pos(magic, header_size) {
+    var header_start = header_start_pos(magic);
+    return align_to_8_bytes(header_start + header_size);
+}
+
+var  handleExperimentFiles = function(protobuf_loader, files) {
     for (var i = 0; i < files.length; i++) {
-        var local_file = new LocalStFile(files[i]);
-        // TODO add assert
-        window.local_files[ local_file.file.name ] = local_file;
-        parse_file(local_file);
+        var file = files[i];
+        var slice_loader = new LocalSliceLoader(file);
+        window.local_files[ file.name ] =  new StExpProtobufFile(slice_loader, protobuf_loader);
     }
-}
+}.bind(null, protobuf_loader_global);
 
 function handleLayoutFiles(files) {
     for (var i = 0; i < files.length; i++) {
@@ -290,6 +375,49 @@ function add_osd_window() {
           'y' : 0
         }
     ]}) 
+}
+
+function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_coord, y_coord, images, tile_conversions, color_array) {
+    console.log("in add_layout_image ",  x_coord, y_coord);
+    var osd_layout_image_colors_index = window.osd_layout_image_colors.length;
+    window.osd_layout_image_colors.push(color_array);
+
+    var tile_conversion_index = 0; // TODO: this should be configurable somehow. The exeperiment might include more than one tile_conversion
+    var tile_conversion = tile_conversions[tile_conversion_index];
+    
+    var image_index = 1;
+    var im = images[image_index];              
+    osd_viewer.addTiledImage(
+        {
+            tileSource: {
+                height: im.imageHeight,
+                width: im.imageHeight,
+                tileSize: tile_conversion.tileSize,
+                tileOverlap: tile_conversion.tileOverlap,
+                getTileUrl: function (datafile, level, x, y) {
+                    return [datafile, image_index, tile_conversion_index, osd_layout_image_colors_index, level, x, y].join("/");
+                }.bind(null, layoutimage_datafile)
+            },
+            x: x_coord,
+            y: y_coord,
+            width: 1.1,
+            index: 0
+        }
+    );
+    var d3Rect = d3.select(overlay.node()).
+        append("text")
+        .attr("height", 0.1)
+        .attr("x", x_coord + 0.55)
+        .attr("y", y_coord + 1)
+
+        .style("font-size","0.05px")
+        .style("text-anchor", "middle")
+        .text(title);
+
+    osd_viewer.viewport.goHome();               
+    osd_viewer.viewport.fitHorizontally(true);
+    osd_viewer.viewport.applyConstraints();
+    osd_viewer.viewport.update();                
 }
 
 function add_osd_window_from_layout(layout) {
@@ -316,52 +444,19 @@ function add_osd_window_from_layout(layout) {
     for (var i = 0; i < layoutimages.length; i++) {
         var layoutimage = layoutimages[i];
         var local_st_file = window.local_files[ layoutimage.datafile ];
-        var header = local_st_file.parsed_header;
-        var tile_conversion_index = 0;
-        var tile_conversion = header.tileConversions[tile_conversion_index];
+
         if (layoutimage.rendering.type == "fromgene") {
-            var gene_id =         local_st_file.gene_names_dictionary[layoutimage.rendering.gene_name];
-            var gene_name = layoutimage.rendering.gene_name;
-            calculate_spot_colors(function (header, viewer, tile_conversion, layoutimage, overlay, title, colors) {
-                var color_index = window.colors.length;
-                window.colors.push(colors);
-
-                var image_index = 1;
-                var im = header.images[image_index];
-               
-                viewer.addTiledImage(
-                    {
-                        tileSource: {
-                            height: im.imageHeight,
-                            width: im.imageHeight,
-                            tileSize: tile_conversion.tileSize,
-                            tileOverlap: tile_conversion.tileOverlap,
-                            getTileUrl: function (datafile, level, x, y) {
-                                return  datafile + "/" + image_index + "/" + tile_conversion_index + "/"   +  color_index +  "/"  + level+ "/" + x + "/" + y;
-                            }.bind(null, layoutimage.datafile)
-                        },
-                        x: layoutimage.x,
-                        y: layoutimage.y,
-                        width: 1.1,
-                        index: i
-                    }
-                );
-                var d3Rect = d3.select(overlay.node()).
-                    append("text")
-                    .attr("height", 0.1)
-                    .attr("x", layoutimage.x + 0.55)
-                    .attr("y", layoutimage.y + 1)
-
-                    .style("font-size","0.05px")
-                    .style("text-anchor", "middle")
-                    .text(title);
-
-                viewer.viewport.goHome();               
-                viewer.viewport.fitHorizontally(true);
-                viewer.viewport.applyConstraints();
-                viewer.viewport.update();
-                
-            }.bind(null, header, viewer, tile_conversion,  layoutimage, overlay, gene_name), gene_id,  local_st_file, 1200);
+            var genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, local_st_file.genenames_dict, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
+            Promise.all([genehit, local_st_file.header, local_st_file.spots]).then(
+                function(layoutimage, values) {
+                    var genehit_decoded = values[0];
+                    var header_decoded = values[1];
+                    var spots_decoded = values[2];
+                    var genehit_array = genehits_as_array(genehit_decoded, spots_decoded.spots.length);
+                    var color_array = calculate_spot_colors_from_genehit_array(genehit_array);
+                    add_layout_image(viewer, overlay, layoutimage.datafile, layoutimage.rendering.gene_name, layoutimage.x, layoutimage.y, header_decoded.images, header_decoded.tileConversions, color_array);
+                }.bind(null,  layoutimage)
+            );
         }
     }
 }

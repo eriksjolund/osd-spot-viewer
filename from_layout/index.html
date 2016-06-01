@@ -14,7 +14,8 @@
   <body>
     <script>
 window.local_files = {};
-window.colors = [];
+
+window.osd_layout_image_colors = [];
 
 var ProtoBuf = dcodeIO.ProtoBuf;
 var builder = ProtoBuf.newBuilder();
@@ -27,10 +28,16 @@ window.protobuf_message_parsers.gene_hit =  builder.build("st_exp_proto").GeneHi
 window.protobuf_message_parsers.spots =  builder.build("st_exp_proto").Spots;
 window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").GeneNames;
      
-      </script>
-    <label for="experiment_files_input">Select experiment files:</label><input type="file" id="experiment_files_input" multiple onchange="handleSelectedFiles(this.files)"><br/>
+    </script>
+
+    
+    <label for="experiment_files_input">Select experiment files:</label><input type="file" id="experiment_files_input" multiple onchange="handleExperimentFiles(this.files)"><br/>
     <label for="layout_files_input">Select layout file:</label><input type="file" id="layout_files_input" onchange="handleLayoutFiles(this.files)">
 <!--    <button  onclick="add_osd_window()">add section</button>-->
     <div id="osd_windows">      
+      <div>
+    <b>    
+<br/>
+      Changes to this web page: June 2nd 2016, started to use Javascript ES6 Promises (only tested with Google Chrome and Firefox)</b></div>
   </body>
 </html>
