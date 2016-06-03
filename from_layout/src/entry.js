@@ -176,6 +176,31 @@ class LocalSliceLoader {
     }
 }
 
+
+// It might be possible to implement the RemoteSliceLoader with the new Fetch API instead of XMLHttpRequest.
+// Maybe something for the future?
+
+
+class RemoteSliceLoader {
+    constructor(url) {
+        this.url = url;
+    }
+    get_slice(start_pos, size) {
+        return new Promise(function(url, resolve, reject) {
+        var range_string = 'bytes=' +  start_pos + "-" + (start_pos + size - 1);
+        var xhr = new XMLHttpRequest();
+        xhr.open( "GET", url, true );
+        xhr.responseType = "arraybuffer";
+        xhr.setRequestHeader(
+            'Range', range_string);
+        xhr.onload = function( e ) {
+            console.log("this.status=" + this.status);
+            resolve(this.response);
+        };
+        xhr.send();
+        }.bind(this, this.url) ) }
+}
+
 function get_headersize(protobuf_loader, slice_loader) {
     return Promise.all([protobuf_loader.builder, slice_loader.get_slice(magic.length, 5)]).then(function (values) {
         var headersize_builder = values[0].fileformat_common_proto.HeaderSize;
@@ -346,12 +371,38 @@ function file_regions_start_pos(magic, header_size) {
     return align_to_8_bytes(header_start + header_size);
 }
 
-var  handleExperimentFiles = function(protobuf_loader, files) {
+
+var handleAddExperimentURL = function(protobuf_loader) {
+    console.log("handleAddExperimentURL");
+    var remote_url = document.getElementById('input_remote_url_to_add').value ;
+    var slice_loader = new RemoteSliceLoader(remote_url);
+    var url_parser = document.createElement('a');
+    url_parser.href = remote_url;
+    // Retrieving the experiment filename out of an URL will not work if the URL is something like:
+    //
+    // http://example.com
+    // http://example.com/
+    // http://example.com/mega/
+    //
+    // But it will work for
+    // http://example.com/files/file.st_exp_protobuf?extraparam=value
+    // http://example.com/files/file.st_exp_protobuf
+    // http://example.com/file.st_exp_protobuf
+    //
+    // TODO: Maybe the experiment name should be stored inside the experiment file itself instead?
+    var experiment_name = url_parser.pathname.substr(url_parser.pathname.lastIndexOf("/")+1);
+    console.log("experiment_name = " + experiment_name);
+    window.local_files[ experiment_name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
+}.bind(null, protobuf_loader_global);
+
+var handleExperimentFiles = function(protobuf_loader, files) {
+
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
         var slice_loader = new LocalSliceLoader(file);
         window.local_files[ file.name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
     }
+
 }.bind(null, protobuf_loader_global);
 
 function handleLayoutFiles(files) {
@@ -383,7 +434,6 @@ function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_co
 
     var tile_conversion_index = 0; // TODO: this should be configurable somehow. The exeperiment might include more than one tile_conversion
     var tile_conversion = tile_conversions[tile_conversion_index];
-    
     var image_index = 1;
     var im = images[image_index];              
     osd_viewer.addTiledImage(

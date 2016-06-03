@@ -9,7 +9,9 @@
    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
    <script type="text/javascript" src="http://openseadragon.github.io/svg-overlay/openseadragon-svg-overlay.js"></script>
    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-   <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+   <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
+   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
     <script>
@@ -30,14 +32,36 @@ window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").Gene
      
     </script>
 
-    
-    <label for="experiment_files_input">Select experiment files:</label><input type="file" id="experiment_files_input" multiple onchange="handleExperimentFiles(this.files)"><br/>
-    <label for="layout_files_input">Select layout file:</label><input type="file" id="layout_files_input" onchange="handleLayoutFiles(this.files)">
-<!--    <button  onclick="add_osd_window()">add section</button>-->
-    <div id="osd_windows">      
-      <div>
-    <b>    
+    <h2>Experiment files</h2>
+
+    <label class="btn btn-default btn-file">
+      Add local experiment files <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="handleExperimentFiles(this.files)">
+      </label>
 <br/>
-      Changes to this web page: June 1st 2016, started to use Javascript ES6 Promises (only tested with Google Chrome and Firefox)</b></div>
+
+<!--   <button  onclick="add_osd_window()">add section</button>-->
+    <div>
+       <div class="input-group">
+         <span class="input-group-btn">
+           <button class="btn btn-default" type="button" onclick="handleAddExperimentURL()">Add URL to experiment file</button>
+         </span>
+         <input type="text" id="input_remote_url_to_add" class="form-control" placeholder="Add URL to remote experiment file">
+       </div>
+    </div>
+
+    <h2>Layout files</h2>
+    <label class="btn btn-default btn-file">
+      Add local layout file
+      <input type="file" style="display: none;"   id="layout_files_input" onchange="handleLayoutFiles(this.files)">
+    </label>
+
+    <div id="osd_windows"></div>
+    <div>
+      <br/>
+      <b>
+        Changes to this web page: June 1st 2016, started to use Javascript ES6 Promises (only tested with Google Chrome and Firefox)
+      </b>
+    </div>
+ <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
   </body>
 </html>
