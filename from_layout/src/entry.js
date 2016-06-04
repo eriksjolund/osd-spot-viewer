@@ -469,43 +469,92 @@ function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_co
     osd_viewer.viewport.update();                
 }
 
-function add_osd_window_from_layout(layout) {
-    var osd_windows = document.getElementById('osd_windows');
-    var osd_window_div = document.createElement("div");
-    var local_files_div = document.createElement("div");
-    osd_window_div.appendChild(local_files_div);
-    osd_windows.appendChild(osd_window_div);
-    var layoutimages = layout[ 'layoutimages' ];
-    var osd_container_div = document.createElement("div");
-    osd_container_div.style.width = "1200px";
-    osd_container_div.style.height = "1200px";
-    osd_container_div.id = "osd-"  +    osd_windows.children.length.toString();
-    osd_window_div.appendChild( osd_container_div);   
-    var viewer = OpenSeadragon({
-        id: osd_container_div.id,
-        prefixUrl: "https://openseadragon.github.io/openseadragon/images/",
-        debugMode:  false,
-        showNavigator:  true,
-        zoomPerScroll: 1.8,
-        maxImageCacheCount: 400  // 200 is the default
-    });
-    var overlay = viewer.svgOverlay();    
-    for (var i = 0; i < layoutimages.length; i++) {
-        var layoutimage = layoutimages[i];
-        var local_st_file = window.local_files[ layoutimage.datafile ];
+class Layout {
+    constructor(layout_json) {
+        this.layout_json = layout_json;
+        var osd_windows = document.getElementById('osd_windows');
+        var layout_tab_div = document.createElement("div");
+        osd_windows.appendChild(layout_tab_div);
+        var number_string = osd_windows.children.length.toString();
+        var osd_id_string = "osd-" + number_string;
+        var json_id_string = "json-" + number_string;
+        var osd_alink_id_string = "osd-alink-" + number_string;
+        var json_text = JSON.stringify(this.layout_json,null, 2);
+        layout_tab_div.innerHTML = `
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Layout</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="container">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#${osd_id_string}"  id="${osd_alink_id_string}">Graphical view</a></li>
+                            <li><a data-toggle="tab" href="#${json_id_string}">JSON</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div id="${osd_id_string}" class="tab-pane fade in active">
+                            </div>
+                            <pre id="${json_id_string}"   contenteditable="true" class="tab-pane fade">
+                            </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
 
-        if (layoutimage.rendering.type == "fromgene") {
-            var genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, local_st_file.genenames_dict, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
-            Promise.all([genehit, local_st_file.header, local_st_file.spots]).then(
-                function(layoutimage, values) {
-                    var genehit_decoded = values[0];
-                    var header_decoded = values[1];
-                    var spots_decoded = values[2];
-                    var genehit_array = genehits_as_array(genehit_decoded, spots_decoded.spots.length);
-                    var color_array = calculate_spot_colors_from_genehit_array(genehit_array);
-                    add_layout_image(viewer, overlay, layoutimage.datafile, layoutimage.rendering.gene_name, layoutimage.x, layoutimage.y, header_decoded.images, header_decoded.tileConversions, color_array);
-                }.bind(null, layoutimage)
-            );
+        this.json_container_div = document.getElementById(json_id_string);
+        $(document).on( 'shown.bs.tab', 'a[data-toggle="tab"][id="' + osd_alink_id_string + '"]', function (e) {
+//            console.log(e.target) // activated tab
+            var parsed_json = JSON.parse(this.json_container_div.innerText);
+
+            // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
+            // Note as stated in the Stackoverflow answer, this is in most cases a correct comparison of JSON objects,
+            // but for the cases it is wrong we are mistakingly replacing the OSD window with a new
+            // one. Not such a big deal.
+            if (!(JSON.stringify(parsed_json) === JSON.stringify(this.layout_json))) {
+                this.layout_json = parsed_json;
+                this.viewer.destroy();
+                this.viewer = null;
+                this.setViewerFromLayoutJson();
+            }
+        }.bind(this))
+        this.json_container_div.textContent = json_text;
+        this.osd_container_div = document.getElementById(osd_id_string);
+        this.osd_container_div.style.width = "1200px";
+        this.osd_container_div.style.height = "1200px";
+        this.setViewerFromLayoutJson();
+    }
+    setViewerFromLayoutJson() {
+        this.viewer = new OpenSeadragon({
+            id: this.osd_container_div.id,
+            prefixUrl: "https://openseadragon.github.io/openseadragon/images/",
+            debugMode:  false,
+            showNavigator:  true,
+            zoomPerScroll: 1.8,
+            maxImageCacheCount: 400  // 200 is the default
+        });
+        var overlay = this.viewer.svgOverlay();
+        var layoutimages = this.layout_json['layoutimages'];
+        for (var i = 0; i < layoutimages.length; i++) {
+            var layoutimage = layoutimages[i];
+            var local_st_file = window.local_files[ layoutimage.datafile ];
+            if (layoutimage.rendering.type == "fromgene") {
+                var genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, local_st_file.genenames_dict, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
+                Promise.all([genehit, local_st_file.header, local_st_file.spots]).then(
+                    function(layoutimage, values) {
+                        var genehit_decoded = values[0];
+                        var header_decoded = values[1];
+                        var spots_decoded = values[2];
+                        var genehit_array = genehits_as_array(genehit_decoded, spots_decoded.spots.length);
+                        var color_array = calculate_spot_colors_from_genehit_array(genehit_array);
+                        add_layout_image(this.viewer, overlay, layoutimage.datafile, layoutimage.rendering.gene_name, layoutimage.x, layoutimage.y, header_decoded.images, header_decoded.tileConversions, color_array);
+                    }.bind(this, layoutimage)
+                );
+            }
         }
     }
+}
+
+function add_osd_window_from_layout(layout) {
+    window.layouts.push(new Layout(layout));
 }

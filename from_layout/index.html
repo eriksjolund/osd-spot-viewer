@@ -18,6 +18,7 @@
 window.local_files = {};
 
 window.osd_layout_image_colors = [];
+window.layouts = [];
 
 var ProtoBuf = dcodeIO.ProtoBuf;
 var builder = ProtoBuf.newBuilder();
@@ -52,7 +53,7 @@ window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").Gene
     <h2>Layout files</h2>
     <label class="btn btn-default btn-file">
       Add local layout file
-      <input type="file" style="display: none;"   id="layout_files_input" onchange="handleLayoutFiles(this.files)">
+      <input type="file" style="display: none;"   id="layout_files_input" multiple onchange="handleLayoutFiles(this.files)">
     </label>
 
     <div id="osd_windows"></div>
