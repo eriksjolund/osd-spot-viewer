@@ -15,28 +15,20 @@
   </head>
   <body>
     <script>
-window.local_files = {};
+
 
 window.osd_layout_image_colors = [];
-window.layouts = [];
 
-var ProtoBuf = dcodeIO.ProtoBuf;
-var builder = ProtoBuf.newBuilder();
-ProtoBuf.loadProtoFile("st_exp.proto", builder);    
 
-window.protobuf_message_parsers = {};
-window.protobuf_message_parsers.header_size_message =  builder.build("fileformat_common_proto").HeaderSize;
-window.protobuf_message_parsers.header_message =  builder.build("st_exp_proto").Header;
-window.protobuf_message_parsers.gene_hit =  builder.build("st_exp_proto").GeneHit;
-window.protobuf_message_parsers.spots =  builder.build("st_exp_proto").Spots;
-window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").GeneNames;
-     
+var global = new Global();
+
+var startFunction = function(experiment_files, obj_this) { start_function_experiment(experiment_files, obj_this); }.bind(null, global.experiment_files);
     </script>
 
     <h2>Experiment files</h2>
 
     <label class="btn btn-default btn-file">
-      Add local experiment files <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="handleExperimentFiles(this.files)">
+      Add local experiment files <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="global.handleExperimentFiles(this.files)">
       </label>
 <br/>
 
@@ -44,7 +36,7 @@ window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").Gene
     <div>
        <div class="input-group">
          <span class="input-group-btn">
-           <button class="btn btn-default" type="button" onclick="handleAddExperimentURL()">Add URL to experiment file</button>
+           <button class="btn btn-default" type="button" onclick="global.handleAddExperimentURL()">Add URL to experiment file</button>
          </span>
          <input type="text" id="input_remote_url_to_add" class="form-control" placeholder="Add URL to remote experiment file">
        </div>
@@ -53,7 +45,7 @@ window.protobuf_message_parsers.gene_names =  builder.build("st_exp_proto").Gene
     <h2>Layout files</h2>
     <label class="btn btn-default btn-file">
       Add local layout file
-      <input type="file" style="display: none;"   id="layout_files_input" multiple onchange="handleLayoutFiles(this.files)">
+      <input type="file" style="display: none;"   id="layout_files_input" multiple onchange="global.handleLayoutFiles(this.files)">
     </label>
 
     <div id="osd_windows"></div>

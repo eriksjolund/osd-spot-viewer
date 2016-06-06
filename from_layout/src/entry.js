@@ -24,6 +24,58 @@
 // Author: Erik Sjolund
 var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
 
+function addExperimentURL(remote_url, protobuf_loader, experiment_files) {
+    var slice_loader = new RemoteSliceLoader(remote_url);
+    var url_parser = document.createElement('a');
+    url_parser.href = remote_url;
+    // Retrieving the experiment filename out of an URL will not work if the URL is something like:
+    //
+    // http://example.com
+    // http://example.com/
+    // http://example.com/mega/
+    //
+    // But it will work for
+    // http://example.com/files/file.st_exp_protobuf?extraparam=value
+    // http://example.com/files/file.st_exp_protobuf
+    // http://example.com/file.st_exp_protobuf
+    //
+    // TODO: Maybe the experiment name should be stored inside the experiment file itself instead?
+    var experiment_name = url_parser.pathname.substr(url_parser.pathname.lastIndexOf("/")+1);
+    console.log("experiment_name = " + experiment_name);
+    experiment_files[ experiment_name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
+}
+
+class Global {
+    constructor() {
+	this.layouts = [];
+        this.experiment_files = {};
+	this.protobuf_loader = new ProtoBufLoader();
+    }
+    handleAddExperimentURL() {
+	var remote_url = document.getElementById('input_remote_url_to_add').value ;
+	addExperimentURL(remote_url, this.protobuf_loader, this.experiment_files);
+    }
+    handleLayoutFiles(files) {
+	for (var i = 0; i < files.length; i++) {
+            var file_reader = new FileReader();
+            file_reader.onloadend = function(layouts, experiment_files, evt) {
+		if (evt.target.readyState == FileReader.DONE) {
+		    var layout_json = JSON.parse(evt.target.result);
+		    layouts.push(new Layout(layout_json, experiment_files));
+		}
+            }.bind(null, this.layouts, this.experiment_files);
+            file_reader.readAsText(files[i]);
+	}
+    }
+    handleExperimentFiles(files) {
+	for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var slice_loader = new LocalSliceLoader(file);
+            this.experiment_files[ file.name ] = new StExpProtobufFile(slice_loader, this.protobuf_loader);
+	}
+    }
+}
+
 class ProtoBufLoader {
     constructor() {
         this.builder = new Promise(function(resolve, reject) {
@@ -34,8 +86,6 @@ class ProtoBufLoader {
         });      
     }
 }
-
-var protobuf_loader_global = new ProtoBufLoader();
 
 function num_levels(width, height) {
     return Math.ceil(Math.log2(Math.max(width, height))) + 1;
@@ -79,7 +129,7 @@ function coord_relative_tile(coord_dzi, coord_spot, tile_size, tile_overlap, lev
     return result_coord;
 }
 
-function startFunction(obj_this) {
+function start_function_experiment(experiment_files, obj_this) {
     var fields = obj_this.src.split("/");
     var args = {};
     args.filename = fields[0];
@@ -90,11 +140,11 @@ function startFunction(obj_this) {
     args.xcoord = parseInt(fields[5]);
     args.ycoord = parseInt(fields[6]);
     
-    var local_st_file = window.local_files[args.filename];
-    // local_st_file.header should already be fullfilled by now. But nonetheless then() is used. Maybe change this somehow in the future ...
+    var experiment_file = experiment_files[args.filename];
+    // experiment_file.header should already be fullfilled by now. But nonetheless then() is used. Maybe change this somehow in the future ...
 
-    local_st_file.header.then(
-        function (args, local_st_file, header_decoded) {          
+    experiment_file.header.then(
+        function (args, experiment_file, header_decoded) {
             var full_image = header_decoded.images[args.image_index];
             var full_image_width = full_image.imageWidth;
             var full_image_height = full_image.imageHeight;
@@ -103,9 +153,9 @@ function startFunction(obj_this) {
             var tile_id = calculate_tile_id(args.xcoord, args.ycoord, args.level, full_image_width, full_image_height, tile_size);
 
             var file_region = tile_conversion.tiledImages[args.image_index].tiles[tile_id];
-            var tile = get_tile(tile_id, args.image_index, args.tile_conversion_index, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
+            var tile = get_tile(tile_id, args.image_index, args.tile_conversion_index, experiment_file.headersize, experiment_file.header, experiment_file.protobuf_loader, experiment_file.slice_loader);
             var color_array = window.osd_layout_image_colors[args.osd_layout_image_colors_index];
-            Promise.all([local_st_file.spots, tile]).then(
+            Promise.all([experiment_file.spots, tile]).then(
                 function(color_array,  x_coord, y_coord, level, tile_size, tile_overlap, full_image_width, full_image_height, values) {
                     var spots_decoded = values[0];
                     var tile_buff = values[1];
@@ -139,7 +189,7 @@ function startFunction(obj_this) {
                     tile_img.src =  "data:image/jpeg;base64," + tile_base64;                  
                 }.bind(this, color_array, args.xcoord, args.ycoord, args.level, tile_size, tile_conversion.tileOverlap, full_image_width, full_image_height)
             );
-        }.bind(obj_this, args, local_st_file)
+        }.bind(obj_this, args, experiment_file)
     );
 } 
 
@@ -175,7 +225,6 @@ class LocalSliceLoader {
         return promise;
     }
 }
-
 
 // It might be possible to implement the RemoteSliceLoader with the new Fetch API instead of XMLHttpRequest.
 // Maybe something for the future?
@@ -371,52 +420,7 @@ function file_regions_start_pos(magic, header_size) {
     return align_to_8_bytes(header_start + header_size);
 }
 
-
-var handleAddExperimentURL = function(protobuf_loader) {
-    console.log("handleAddExperimentURL");
-    var remote_url = document.getElementById('input_remote_url_to_add').value ;
-    var slice_loader = new RemoteSliceLoader(remote_url);
-    var url_parser = document.createElement('a');
-    url_parser.href = remote_url;
-    // Retrieving the experiment filename out of an URL will not work if the URL is something like:
-    //
-    // http://example.com
-    // http://example.com/
-    // http://example.com/mega/
-    //
-    // But it will work for
-    // http://example.com/files/file.st_exp_protobuf?extraparam=value
-    // http://example.com/files/file.st_exp_protobuf
-    // http://example.com/file.st_exp_protobuf
-    //
-    // TODO: Maybe the experiment name should be stored inside the experiment file itself instead?
-    var experiment_name = url_parser.pathname.substr(url_parser.pathname.lastIndexOf("/")+1);
-    console.log("experiment_name = " + experiment_name);
-    window.local_files[ experiment_name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
-}.bind(null, protobuf_loader_global);
-
-var handleExperimentFiles = function(protobuf_loader, files) {
-
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        var slice_loader = new LocalSliceLoader(file);
-        window.local_files[ file.name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
-    }
-
-}.bind(null, protobuf_loader_global);
-
-function handleLayoutFiles(files) {
-    for (var i = 0; i < files.length; i++) {
-        var file_reader = new FileReader();
-        file_reader.onloadend = function(evt) {
-            if (evt.target.readyState == FileReader.DONE) {
-                add_osd_window_from_layout(JSON.parse(evt.target.result));
-            }
-        }
-        file_reader.readAsText(files[i]);
-    }
-}
-
+/*
 function add_osd_window() {
     add_osd_window_from_layout({'layoutimages' : [
         { 'datafile' : 'out.bin',
@@ -426,7 +430,7 @@ function add_osd_window() {
         }
     ]}) 
 }
-
+*/
 function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_coord, y_coord, images, tile_conversions, color_array) {
     console.log("in add_layout_image ",  x_coord, y_coord);
     var osd_layout_image_colors_index = window.osd_layout_image_colors.length;
@@ -458,20 +462,15 @@ function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_co
         .attr("height", 0.1)
         .attr("x", x_coord + 0.55)
         .attr("y", y_coord + 1)
-
         .style("font-size","0.05px")
         .style("text-anchor", "middle")
         .text(title);
-
-    osd_viewer.viewport.goHome();               
-    osd_viewer.viewport.fitHorizontally(true);
-    osd_viewer.viewport.applyConstraints();
-    osd_viewer.viewport.update();                
 }
 
 class Layout {
-    constructor(layout_json) {
+    constructor(layout_json, experiment_files) {
         this.layout_json = layout_json;
+	this.experiment_files = experiment_files;
         var osd_windows = document.getElementById('osd_windows');
         var layout_tab_div = document.createElement("div");
         osd_windows.appendChild(layout_tab_div);
@@ -533,14 +532,29 @@ class Layout {
             zoomPerScroll: 1.8,
             maxImageCacheCount: 400  // 200 is the default
         });
-        var overlay = this.viewer.svgOverlay();
-        var layoutimages = this.layout_json['layoutimages'];
-        for (var i = 0; i < layoutimages.length; i++) {
+	var overlay = this.viewer.svgOverlay();
+        // This seems to be a bug in 
+	// https://github.com/openseadragon/svg-overlay
+	//
+	// At least the "update-viewport" handler is used in a similar plugin
+	// https://github.com/altert/OpenseadragonFabricjsOverlay/blob/master/openseadragon-fabricjs-overlay.js
+	// but it is missing from
+	// https://github.com/openseadragon/svg-overlay
+	//
+	// If this code is not added here the gene name text is sometimes not updated and therefore
+	// located at the wrong place.
+        this.viewer.addHandler('update-viewport', function() {
+	    overlay.resize();
+        });
+
+	var layoutimages = this.layout_json['layoutimages'];
+        var layout_image_promises = [];
+	for (var i = 0; i < layoutimages.length; i++) {
             var layoutimage = layoutimages[i];
-            var local_st_file = window.local_files[ layoutimage.datafile ];
+            var experiment_file = this.experiment_files[ layoutimage.datafile ];
             if (layoutimage.rendering.type == "fromgene") {
-                var genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, local_st_file.genenames_dict, local_st_file.headersize, local_st_file.header, local_st_file.protobuf_loader, local_st_file.slice_loader);
-                Promise.all([genehit, local_st_file.header, local_st_file.spots]).then(
+                var genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, experiment_file.genenames_dict, experiment_file.headersize, experiment_file.header, experiment_file.protobuf_loader, experiment_file.slice_loader);
+                layout_image_promises.push(Promise.all([genehit, experiment_file.header, experiment_file.spots]).then(
                     function(layoutimage, values) {
                         var genehit_decoded = values[0];
                         var header_decoded = values[1];
@@ -548,13 +562,21 @@ class Layout {
                         var genehit_array = genehits_as_array(genehit_decoded, spots_decoded.spots.length);
                         var color_array = calculate_spot_colors_from_genehit_array(genehit_array);
                         add_layout_image(this.viewer, overlay, layoutimage.datafile, layoutimage.rendering.gene_name, layoutimage.x, layoutimage.y, header_decoded.images, header_decoded.tileConversions, color_array);
-                    }.bind(this, layoutimage)
-                );
-            }
+		    }.bind(this, layoutimage)));
+	    }
         }
+        Promise.all(layout_image_promises).then(
+	    // If we don't run goHome(true), the zoom and pan is set so that only one experiment image is shown.
+	    // But it is better if all layout images are shown by default.
+	    // Therefore this callback is run once after all layoutimages have been added.
+            function(viewer) {
+		setTimeout(function(osd_viewer) {
+		    osd_viewer.viewport.goHome(true);
+		    osd_viewer.viewport.update();
+		}.bind(null,viewer),0); }.bind(null, this.viewer)
+	);
     }
 }
 
-function add_osd_window_from_layout(layout) {
-    window.layouts.push(new Layout(layout));
-}
+
+
