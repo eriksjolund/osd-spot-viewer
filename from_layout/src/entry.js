@@ -42,18 +42,51 @@ function addExperimentURL(remote_url, protobuf_loader, experiment_files) {
     // TODO: Maybe the experiment name should be stored inside the experiment file itself instead?
     var experiment_name = url_parser.pathname.substr(url_parser.pathname.lastIndexOf("/")+1);
     console.log("experiment_name = " + experiment_name);
-    experiment_files[ experiment_name ] = new StExpProtobufFile(slice_loader, protobuf_loader);
+    var experiment_file = new StExpProtobufFile(slice_loader, protobuf_loader);
+    experiment_files[ experiment_name ] = experiment_file;
+    return experiment_file.genenames;
+}
+
+function update_unique_genenames(set_of_genenames, genenames_typeahead_elem, genenames_decoded) {
+    for (var i = 0; i < genenames_decoded.length; i++) {
+        var gene_names = genenames_decoded[i].geneNames;
+        for (var j = 0; j < gene_names.length; j++) {
+            set_of_genenames.add(gene_names[j]);
+        }
+    }
+    var unique_gene_names = [];
+    for (let item of set_of_genenames) {
+        unique_gene_names.push(item);
+    }
+    var genes_bloodhound = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.whitespace,
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: unique_gene_names
+    });
+    genenames_typeahead_elem.typeahead(
+        {
+            hint: true,
+            highlight: true,
+            minLength: 1
+        },
+        {
+            name: 'genes_bloodhound',
+            limit: 20,
+            source: genes_bloodhound });
 }
 
 class Global {
-    constructor() {
+    constructor(genenames_typeahead_elem) {
 	this.layouts = [];
         this.experiment_files = {};
 	this.protobuf_loader = new ProtoBufLoader();
+        this.set_of_genenames = new Set();
+        this.genenames_typeahead_elem = genenames_typeahead_elem;
     }
     handleAddExperimentURL() {
-	var remote_url = document.getElementById('input_remote_url_to_add').value ;
-	addExperimentURL(remote_url, this.protobuf_loader, this.experiment_files);
+	var remote_url = document.getElementById('input_remote_url_to_add').value;
+	var genenames_promises = addExperimentURL(remote_url, this.protobuf_loader, this.experiment_files);
+        Promise.all([genenames_promises]).then(update_unique_genenames.bind(null, this.set_of_genenames, this.genenames_typeahead_elem));
     }
     handleLayoutFiles(files) {
 	for (var i = 0; i < files.length; i++) {
@@ -68,11 +101,40 @@ class Global {
 	}
     }
     handleExperimentFiles(files) {
+        var gene_names_promises = [];
 	for (var i = 0; i < files.length; i++) {
             var file = files[i];
             var slice_loader = new LocalSliceLoader(file);
-            this.experiment_files[ file.name ] = new StExpProtobufFile(slice_loader, this.protobuf_loader);
-	}
+            var experiment_file =  new StExpProtobufFile(slice_loader, this.protobuf_loader);
+            gene_names_promises.push(experiment_file.genenames);
+            this.experiment_files[ file.name ] = experiment_file;
+        }
+        Promise.all(gene_names_promises).then(update_unique_genenames.bind(null, this.set_of_genenames, this.genenames_typeahead_elem));
+    }
+    handleCreateLayoutFromGeneList() {
+        var genes = $('#genes_textarea').val().split('\n');
+        var layoutimages = [];
+        var i = 0;
+        for (var experiment_name in this.experiment_files) {
+            for (var j = 0; j < genes.length; ++j) {
+                var gene = genes[j];
+                if (gene.length > 0) {
+                    layoutimages.push(
+                        { 'datafile' : experiment_name,
+                          'rendering' : {
+                              'type' : 'fromgene',
+                              "gene_name" : gene },
+                          'x' : j,
+                          'y' : i
+                        }
+                    );
+                }
+            }
+            ++i;
+        }
+        var layout_json = {};
+        layout_json.layoutimages = layoutimages;
+        this.layouts.push(new Layout(layout_json, this.experiment_files));
     }
 }
 
@@ -228,7 +290,6 @@ class LocalSliceLoader {
 
 // It might be possible to implement the RemoteSliceLoader with the new Fetch API instead of XMLHttpRequest.
 // Maybe something for the future?
-
 
 class RemoteSliceLoader {
     constructor(url) {
@@ -420,17 +481,6 @@ function file_regions_start_pos(magic, header_size) {
     return align_to_8_bytes(header_start + header_size);
 }
 
-/*
-function add_osd_window() {
-    add_osd_window_from_layout({'layoutimages' : [
-        { 'datafile' : 'out.bin',
-          'rendering' : { 'type' : 'fromgene',  'geneid' : 1 },
-          'x' : 0,
-          'y' : 0
-        }
-    ]}) 
-}
-*/
 function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_coord, y_coord, images, tile_conversions, color_array) {
     console.log("in add_layout_image ",  x_coord, y_coord);
     var osd_layout_image_colors_index = window.osd_layout_image_colors.length;
@@ -493,7 +543,7 @@ class Layout {
                         <div class="tab-content">
                             <div id="${osd_id_string}" class="tab-pane fade in active">
                             </div>
-                            <pre id="${json_id_string}"   contenteditable="true" class="tab-pane fade">
+                            <pre id="${json_id_string}"   contenteditable="true" class="tab-pane fade" style="text-align: left;">
                             </pre>
                         </div>
                     </div>
@@ -503,7 +553,6 @@ class Layout {
 
         this.json_container_div = document.getElementById(json_id_string);
         $(document).on( 'shown.bs.tab', 'a[data-toggle="tab"][id="' + osd_alink_id_string + '"]', function (e) {
-//            console.log(e.target) // activated tab
             var parsed_json = JSON.parse(this.json_container_div.innerText);
 
             // http://stackoverflow.com/questions/1068834/object-comparison-in-javascript
