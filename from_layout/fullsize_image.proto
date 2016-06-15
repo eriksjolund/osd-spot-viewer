@@ -26,12 +26,16 @@ message InterestingRectangle {
   repeated uint32 rectangleCoordinates = 1; // should be 4 coordinates
 }
 
-
 message FullSizeImage {
   required PhotoType photoType = 1;
   required ImageFileFormat imageFileFormat = 2;
   required uint32 imageWidth = 3;
   required uint32 imageHeight = 4;
+  // imageAlignment represents the transformation matrix between pixels and the real physical world (micrometer).
+  // Relating the pixel coordinates to the physical world makes it possible to have a viewer scalebar
+  // (e.g. https://github.com/usnistgov/OpenSeadragonScalebar).
+  // As OpenSeadragon does not support arbitrary rotation (only 90/180/270 degree rotation), we require that
+  // there is no rotation in the imageAlignment.
   repeated float imageAlignment = 5;
   optional InterestingRectangle interestingRectangle = 6; // If not present, interestingRectangle is assumed to be the same size as the full image size.
   // unit: PixelDimensionsT
