@@ -52,7 +52,7 @@ Unfortunately, no experiment data files are available as of today, so there is c
 ## Draggable circles
 This demo is an example of software design nr 1 but instead of fetching the image tiles from a single file it uses the normal DZI file format.
 
-http://eriksjolund.github.io/osd-spot-viewer/adjust_spots.html
+http://eriksjolund.github.io/osd-spot-viewer/adjust_spots/adjust_spots.html
 
 The circles can be selected with a mouse lasso (press the CTRL-key) and then dragged
 with the mouse.

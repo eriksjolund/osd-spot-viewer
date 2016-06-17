@@ -42,7 +42,8 @@ var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circ
         connectionLineLayer.activate();
         var path = new paper.Path.Line(from, to);
         path.strokeColor = 'red';
-        path.strokeWidth = 50;
+        var radius_average = (to_spot.radius + current_spot.radius) / 2;
+        path.strokeWidth = radius_average * 0.4; // Somehow relating the line width to the radius of the circles seams reasonable.
         path.visible = true;
         path.from_spot = current_spot;
         path.to_spot = to_spot;
@@ -53,7 +54,6 @@ var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circ
 
 var jsondata = null;
 function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circles) {
-    var radius = 200;
     var spots_len = jsondata.spots.length;
     // grid_spots is a Javascript object that provides a mapping between
     // logical grid coordinates and the json spot data.
@@ -67,7 +67,7 @@ function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circl
     }
     function add_circle(spot, circleLayer, connectionLineLayer) {
         circleLayer.activate();
-        var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), radius);
+        var circle = new paper.Path.Circle(new paper.Point(spot.pixel_x, spot.pixel_y), spot.radius);
         circle.neighbours = [];
         circle.fillColor = 'red';
         circle.visible = true;
@@ -131,7 +131,6 @@ function savejson(alink) {
 function guiMode() {
     console.log(JSON.stringify($('#modeSelector input:radio:checked')));
     return $('#modeSelector input:radio:checked').prop('id');
-
     //return $('#modeSelector > .btn.active').prop('id');
 };
 
@@ -286,7 +285,8 @@ window.onload = function() {
         overlay.resize();
         overlay.resizecanvas();
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', "spots.json");
+        // http://stackoverflow.com/questions/22356025/force-cache-control-no-cache-in-chrome-via-xmlhttprequest-on-f5-reload
+        xhr.open('GET', 'spots.json?_=' + new Date().getTime());
         xhr.onload = function(circleLayer, connectionLineLayer, overlay, circles) {
             if (xhr.status === 200) {
                 jsondata = JSON.parse(xhr.responseText);

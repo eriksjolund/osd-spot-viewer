@@ -1,0 +1,494 @@
+{
+    "spots": [
+        {
+            "grid_x": 0, 
+            "grid_y": 0, 
+            "pixel_x": 501, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 1, 
+            "pixel_x": 501, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 2, 
+            "pixel_x": 501, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 3, 
+            "pixel_x": 501, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 4, 
+            "pixel_x": 501, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 5, 
+            "pixel_x": 501, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 6, 
+            "pixel_x": 501, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 7, 
+            "pixel_x": 501, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 8, 
+            "pixel_x": 501, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 9, 
+            "pixel_x": 501, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 0, 
+            "pixel_x": 1504, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 1, 
+            "pixel_x": 1504, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 2, 
+            "pixel_x": 1504, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 3, 
+            "pixel_x": 1504, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 4, 
+            "pixel_x": 1504, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 5, 
+            "pixel_x": 1504, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 6, 
+            "pixel_x": 1504, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 7, 
+            "pixel_x": 1504, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 8, 
+            "pixel_x": 1504, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 9, 
+            "pixel_x": 1504, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 0, 
+            "pixel_x": 2507, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 1, 
+            "pixel_x": 2507, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 2, 
+            "pixel_x": 2507, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 3, 
+            "pixel_x": 2507, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 4, 
+            "pixel_x": 2507, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 5, 
+            "pixel_x": 2507, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 6, 
+            "pixel_x": 2507, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 7, 
+            "pixel_x": 2507, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 8, 
+            "pixel_x": 2507, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 2, 
+            "grid_y": 9, 
+            "pixel_x": 2507, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 0, 
+            "pixel_x": 3510, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 1, 
+            "pixel_x": 3510, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 2, 
+            "pixel_x": 3510, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 3, 
+            "pixel_x": 3510, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 4, 
+            "pixel_x": 3510, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 5, 
+            "pixel_x": 3510, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 6, 
+            "pixel_x": 3510, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 7, 
+            "pixel_x": 3510, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 8, 
+            "pixel_x": 3510, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 3, 
+            "grid_y": 9, 
+            "pixel_x": 3510, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 0, 
+            "pixel_x": 4513, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 1, 
+            "pixel_x": 4513, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 2, 
+            "pixel_x": 4513, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 3, 
+            "pixel_x": 4513, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 4, 
+            "pixel_x": 4513, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 5, 
+            "pixel_x": 4513, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 6, 
+            "pixel_x": 4513, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 7, 
+            "pixel_x": 4513, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 8, 
+            "pixel_x": 4513, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 4, 
+            "grid_y": 9, 
+            "pixel_x": 4513, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 0, 
+            "pixel_x": 5516, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 1, 
+            "pixel_x": 5516, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 2, 
+            "pixel_x": 5516, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 3, 
+            "pixel_x": 5516, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 4, 
+            "pixel_x": 5516, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 5, 
+            "pixel_x": 5516, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 6, 
+            "pixel_x": 5516, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 7, 
+            "pixel_x": 5516, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 8, 
+            "pixel_x": 5516, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 5, 
+            "grid_y": 9, 
+            "pixel_x": 5516, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 0, 
+            "pixel_x": 6519, 
+            "pixel_y": 461, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 1, 
+            "pixel_x": 6519, 
+            "pixel_y": 1383, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 2, 
+            "pixel_x": 6519, 
+            "pixel_y": 2305, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 3, 
+            "pixel_x": 6519, 
+            "pixel_y": 3227, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 4, 
+            "pixel_x": 6519, 
+            "pixel_y": 4149, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 5, 
+            "pixel_x": 6519, 
+            "pixel_y": 5071, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 6, 
+            "pixel_x": 6519, 
+            "pixel_y": 5993, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 7, 
+            "pixel_x": 6519, 
+            "pixel_y": 6915, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 8, 
+            "pixel_x": 6519, 
+            "pixel_y": 7837, 
+            "radius": 200.74285714285716
+        }, 
+        {
+            "grid_x": 6, 
+            "grid_y": 9, 
+            "pixel_x": 6519, 
+            "pixel_y": 8759, 
+            "radius": 200.74285714285716
+        }
+    ]
+}
