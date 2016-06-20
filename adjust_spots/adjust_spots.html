@@ -19,25 +19,100 @@
           <h1>Spot position adjustment</h1>
           <p>Load spot positions from a JSON file and after manually adjusting the positions save the result to a new JSON file</p>
           <div class="span4 collapse-group">
-            <p class="collapse" id="view_details"><small>First provide a URL to a DZI file. Then select a spot position file (JSON).</small></p>
+            <p class="collapse" id="view_details">
+              <small>First select a spot position file (JSON). An example JSON file could for instance look like this:<br/>{
+    "spots": [
+        {
+            "grid_x": 0, 
+            "grid_y": 0, 
+            "pixel_x": 1756, 
+            "pixel_y": 1536, 
+            "radius": 702.6
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 1, 
+            "pixel_x": 1756, 
+            "pixel_y": 4609, 
+            "radius": 702.6
+        }, 
+        {
+            "grid_x": 0, 
+            "grid_y": 2, 
+            "pixel_x": 1756, 
+            "pixel_y": 7682, 
+            "radius": 702.6
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 0, 
+            "pixel_x": 5269, 
+            "pixel_y": 1536, 
+            "radius": 702.6
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 1, 
+            "pixel_x": 5269, 
+            "pixel_y": 4609, 
+            "radius": 702.6
+        }, 
+        {
+            "grid_x": 1, 
+            "grid_y": 2, 
+            "pixel_x": 5269, 
+            "pixel_y": 7682, 
+            "radius": 702.6
+        }
+    ]
+}
+                <br/>
+                <br/>
+                Then provide a URL to a DZI file (for instance http://openseadragon.github.io/example-images/highsmith/highsmith.dzi )<br/>
+                In the <a href="https://openseadragon.github.io/">OpenSeadragon</a> window showing the photo, you can now press down the CTRL key and mark a region with the mouse (left mouse button).
+                The selected spots (the green spots) can be dragged by the mouse. After adjusting the spot positions click "save JSON"
+                to save the result into a file.
+              </small>
+            </p>
             <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
           </div>
         </div>
       </div>
-      
+
+
       <div class="row">
 	<div class="col-sm-12">
 	  <label class="btn btn-default btn-file">
-	    Select spot positions file (JSON format) <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="global.handleExperimentFiles(this.files)">
+	    Select spot positions file (JSON format)<input type="file" style="display: none;" id="select_spot_positions_file_input" onchange="handleSpotPositionsFiles(this.files)">
 	  </label>
 	  <br/>
 	  <!--   <button  onclick="add_osd_window()">add section</button>-->
 	</div>
       </div>    
-      <h2>Drag the circles with the mouse!</h2>
-      <div class="row">     
-        <div id="osd" style="width: 1000px; height:800px;" class="col-sm-12" ></div>
-        <script>
+
+      <div class="row" style=" margin-top: 10px;">
+	<div class="col-sm-12">
+	  <div class="input-group">
+            <span class="input-group-btn">
+              <button id="input_remote_dzi_url_to_add_button" class="btn btn-default" type="button" onclick="handleAddDZI()" disabled>Add URL to DZI file</button>
+            </span>
+            <input type="text" id="input_remote_dzi_url_to_add" class="form-control" placeholder="Add URL to remote DZI file" disabled>
+	  </div>
+	</div>
+      </div>
+
+      <div class="row">
+	<div class="col-sm-12">
+          <br/>
+	</div>
+      </div>
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div id="osd" style="width: 1000px; height:800px;" class="col-sm-12"></div>
+        </div>
+      </div>  
+      <script>
 function serialize_key_from_coordinates(x, y) {
     return x + ',' + y;
 }
@@ -70,16 +145,16 @@ var add_neightbour_line = function(current_spot, next_spot_key, grid_spots, circ
     }
 };
 
-var jsondata = null;
-function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circles) {
-    var spots_len = jsondata.spots.length;
+var jsondata = {};
+function paintCircles(jsondata2, circleLayer, connectionLineLayer, overlay, circles) {
+    var spots_len = jsondata2.spots.length;
     // grid_spots is a Javascript object that provides a mapping between
     // logical grid coordinates and the json spot data.
     // For instance, the coordinate x=0 y=0 is set like this:
     // grid_spots[ "0,0" ] = json_spot;
     var grid_spots = {};
     for (var i = 0; i < spots_len; i++) {
-        var spot = jsondata.spots[i];
+        var spot = jsondata2.spots[i];
         var coord_as_string = serialize_key_from_coordinates(spot.grid_x, spot.grid_y);
         grid_spots[ serialize_key_from_coordinates(spot.grid_x, spot.grid_y) ] = spot;
     }
@@ -109,13 +184,13 @@ function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circl
         return circle;
     }
     for (var i = 0; i < spots_len; i++) {
-        var spot = jsondata.spots[i];
+        var spot = jsondata2.spots[i];
         var circle = add_circle(spot, circleLayer);
         var coord_as_string = serialize_key_from_coordinates(spot.grid_x, spot.grid_y);
         circles[ coord_as_string ] = circle;
     }
     for (var i = 0; i < spots_len; i++) {
-        var spot = jsondata.spots[i];
+        var spot = jsondata2.spots[i];
         var circle = get_circle_from_spot(spot, circles);
 
         var spot_to_the_under = spot.grid_y + 1;
@@ -141,7 +216,7 @@ function reset_line_ends_from_spot(line) {
     line.addSegments(seg);
 }
 
-function savejson(alink) {
+function saveJSON(alink) {
     var url = "data:application/json;charset=utf-8,"  + encodeURIComponent(JSON.stringify(jsondata));
     alink.href = url;
 };
@@ -172,8 +247,35 @@ function point_is_over_selected_spot(point, circles) {
     }
     return result;
 }
+var handleSpotPositionsFiles = function(jsondata, files) {
+   console.log(JSON.stringify(files));
+               var file_reader = new FileReader();
 
-window.onload = function() {
+            file_reader.onloadend = function(jsondata, evt) {
+                if (evt.target.readyState == FileReader.DONE) {
+
+var jsondata2 = JSON.parse(evt.target.result);
+                    jsondata.spots = jsondata2.spots;                  
+   $('#input_remote_dzi_url_to_add').prop('disabled', false);
+   $('#input_remote_dzi_url_to_add_button').prop('disabled', false);
+   $('#select_spot_positions_file_input').prop('disabled', true);
+                } else {
+                    reject(Error("could not read local file"));
+                }
+            }.bind(null, jsondata);
+            file_reader.onerror = function(evt) {
+                reject(Error("could not read local file (onerror)"));
+            }
+            file_reader.onabort = function(evt) {
+                reject(Error("could not read local file (onabort)"));
+            }
+            file_reader.readAsText(files[0]);
+
+}.bind(null, jsondata);
+
+var handleAddDZI = function(jsondata) {
+    $('#input_remote_dzi_url_to_add').prop('disabled', true);
+    $('#input_remote_dzi_url_to_add_button').prop('disabled', true);
     var circles = {};
     var selection = {};
     selection.selected_spots_being_dragged = false;
@@ -299,23 +401,14 @@ window.onload = function() {
         }
     }.bind(null, keyboard_status, circles);
 
-    var paint_circles_from_jsonfile = function(circleLayer, connectionLineLayer, overlay, circles, event) {
+    var paint_circles_from_jsonfile = function(jsondata, circleLayer, connectionLineLayer, overlay, circles, event) {
         overlay.resize();
         overlay.resizecanvas();
-        var xhr = new XMLHttpRequest();
-        // http://stackoverflow.com/questions/22356025/force-cache-control-no-cache-in-chrome-via-xmlhttprequest-on-f5-reload
-        xhr.open('GET', 'spots.json?_=' + new Date().getTime());
-        xhr.onload = function(circleLayer, connectionLineLayer, overlay, circles) {
-            if (xhr.status === 200) {
-                jsondata = JSON.parse(xhr.responseText);
-                paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circles);
-            } else {
-                alert('Could not download json. xhr.status = ' + xhr.status);
-            }
-        }.bind(null, circleLayer, connectionLineLayer, overlay, circles);        xhr.send();
-    }.bind(null, circleLayer, connectionLineLayer, overlay, circles);
+        paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circles);
+    }.bind(null, jsondata, circleLayer, connectionLineLayer, overlay, circles);
+
     this.viewer.addTiledImage({
-        tileSource: "http://openseadragon.github.io/example-images/highsmith/highsmith.dzi",
+        tileSource: jQuery.trim($('#input_remote_dzi_url_to_add').val()),
         x: 0,
         y: 0,
         success: paint_circles_from_jsonfile
@@ -335,23 +428,31 @@ window.onload = function() {
         //    paper.view.draw();
     };
     $('#normal').checked = true;
-};
-        </script>
+}.bind(null, jsondata);
+      </script>
+      <div class="row">
+        <div class="col-sm-12">
+          <label for="showLines" >show connection lines</label>
+          <input  id="showLines" type="checkbox"  checked="true">
+        </div>
       </div>
-      <div>
-        <label for="showLines" >show connection lines</label>
-        <input  id="showLines" type="checkbox"  checked="true">
+      <div class="row">
+        <div class="col-sm-12">
+          <a href="#" onclick="saveJSON(this)" download="data.json" id="saveJSON" >save JSON</a>
+        </div>
       </div>
-      <div class="btn-group" data-toggle="buttons" id="modeSelector">
-        <label class="btn btn-primary active">
-          <input type="radio" name="options" id="lasso_selection_mode" checked="true">Lasso selection mode
-        </label>
-        <label class="btn btn-primary">
-          <input type="radio" name="options" id="hover_selection_mode">Hover selection mode
-        </label>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="btn-group" data-toggle="buttons" id="modeSelector">
+            <label class="btn btn-primary active">
+              <input type="radio" name="options" id="lasso_selection_mode" checked="true">Lasso selection mode
+            </label>
+            <label class="btn btn-primary">
+              <input type="radio" name="options" id="hover_selection_mode">Hover selection mode
+            </label>
+          </div>
+        </div>
       </div>
-      <br/>   
-      <a href="#"   onclick="savejson(this)" download="data.json" id="saveJSON" >save json</a>
     </div>
   </body>
 </html>
