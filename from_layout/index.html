@@ -17,6 +17,24 @@
   </head>
   <body>
     <div class="container-fluid">
+      <div class="row">
+        <div class="jumbotron">
+          <h1>Viewer for st_exp_protobuf data</h1>
+          <p>Visualize gene expression on top of cell tissues by use of OpenSeadragon</p>
+          <div class="span4 collapse-group">
+            <p class="collapse" id="view_details">
+              <small>Quick start: First select a local <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file or open a remote URL to a st_exp_protobuf file.
+                After that the "add gene" input field will provide auto-completion functionality when typing gene names. Add some genes so that they appear as a new-line-separated list of genes in the gene list. Now click "Create layout from gene list". An OpenSeadragon window will now appear where each of the genes have had its gene expression values painted as circles on top of the cell tissue microscope photos.
+                <br/>
+                <br/>
+                More in-depth information: The <a href="https://github.com/eriksjolund/st_exp_protobuf/">st_exp_protobuf</a> file format stores <a href="https://en.wikipedia.org/wiki/Pyramid_(image_processing)">pyramid</a> image tiles of high-resolution microscope photos that can be displayed by <a href="https://github.com/openseadragon/openseadragon/compare/master...eriksjolund:image_job_start_function">slightly modified</a> <a href="https://openseadragon.github.io/">OpenSeadragon</a>. The file format also contains gene expression values stored indexed by gene. A small header in the beginning of the file contains indexes to the rest of the file. With this design, opening and displaying the gene expression will be very fast because only a fraction of the whole  st_exp_protobuf file needs to be downloaded (or read). The relevant parts of the data will be retrieved as byte ranges.
+              </small>
+            </p>
+            <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
+          </div>
+        </div>
+      </div>
+
       <h2>Experiments</h2>
       <div class="row">
 	<div class="col-sm-12">
