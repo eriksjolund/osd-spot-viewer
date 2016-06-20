@@ -1,37 +1,26 @@
 <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>osd-spot-viewer</title>
-        <script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script>       
-        <script src="http://eriksjolund.github.io/OpenSeadragonPaperjsOverlay/openseadragon-paperjs-overlay.js"></script>        
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.24/paper-full.min.js"></script>
-        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-    </head>
-    <body>
-
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>osd-spot-viewer</title>
+    <script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script>       
+    <script src="http://eriksjolund.github.io/OpenSeadragonPaperjsOverlay/openseadragon-paperjs-overlay.js"></script>        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.24/paper-full.min.js"></script>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
     <div class="container-fluid">
-
-<!--
-      <div class="row">     
-        <div class="span4 collapse-group">
-          <p class="collapse" id="view_details">First provide a URL to a DZI file. Then select a spot position file (JSON).</p>
-          <p><a class="btn" data-toggle="collapse" data-target="#view_details">View details &raquo;</a></p>
-        </div>
-      </div>
-      
--->
       <div class="row">     
         <div class="jumbotron">
           <h1>Spot position adjustment</h1>
           <p>Load spot positions from a JSON file and after manually adjusting the positions save the result to a new JSON file</p>
           <div class="span4 collapse-group">
-          <p class="collapse" id="view_details"><small>First provide a URL to a DZI file. Then select a spot position file (JSON).</small></p>
-          <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
+            <p class="collapse" id="view_details"><small>First provide a URL to a DZI file. Then select a spot position file (JSON).</small></p>
+            <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
           </div>
         </div>
       </div>
@@ -44,14 +33,11 @@
 	  <br/>
 	  <!--   <button  onclick="add_osd_window()">add section</button>-->
 	</div>
-      </div>
-
-      
+      </div>    
       <h2>Drag the circles with the mouse!</h2>
       <div class="row">     
-      <div id="osd" style="width: 1000px; height:800px;" class="col-sm-12" ></div>
+        <div id="osd" style="width: 1000px; height:800px;" class="col-sm-12" ></div>
         <script>
-
 function serialize_key_from_coordinates(x, y) {
     return x + ',' + y;
 }
@@ -112,13 +98,13 @@ function paintCircles(jsondata, circleLayer, connectionLineLayer, overlay, circl
         };
         circle.onMouseEnter = function (circle, event) {
             circle.spot_is_selected = true;
-                        circle.fillColor = 'green';
-                                    paper.view.draw();
+            circle.fillColor = 'green';
+            paper.view.draw();
         }.bind(null, circle);
         circle.onMouseLeave = function (circle, event) {
             circle.spot_is_selected = false;
-                        circle.fillColor = 'red';
-                                    paper.view.draw();
+            circle.fillColor = 'red';
+            paper.view.draw();
         }.bind(null, circle);
         return circle;
     }
@@ -241,7 +227,7 @@ window.onload = function() {
         paper.view.draw();
     }.bind(null, connectionLineLayer);
     
-//    $('#modeSelector button')
+    //    $('#modeSelector button')
     
     toggleShowLinesFunc = function(connectionLineLayer, visible) {
         connectionLineLayer.visible = visible;
@@ -263,11 +249,11 @@ window.onload = function() {
             console.log("lasso_selection_mode");
         }       
         if (keyboard_status.ctrl_key_is_down && guiMode() == "lasso_selection_mode") {
-                selection.selection_path = new paper.Path();
-                selection.selection_path.strokeColor = 'black';
-                selection.selection_path.strokeWidth = 1;
-                selection.selection_path.fillColor = 'blue';
-                selection.selection_path.opacity = 0.5;
+            selection.selection_path = new paper.Path();
+            selection.selection_path.strokeColor = 'black';
+            selection.selection_path.strokeWidth = 1;
+            selection.selection_path.fillColor = 'blue';
+            selection.selection_path.opacity = 0.5;
         } else {
             var point = convert_to_paper_point(event.position);
             if (point_is_over_selected_spot(point, circles)) {
@@ -275,7 +261,7 @@ window.onload = function() {
             }           
         }
     }.bind(null, this.viewer, selection, circleLayer, keyboard_status);
-   
+    
     var dragEnd_handler = function(selection, keyboard_status, circles, event) {
         if (keyboard_status.ctrl_key_is_down && guiMode() == "lasso_selection_mode") {
             var transformed_point = paper.view.viewToProject(new paper.Point(event.position.x, event.position.y));
@@ -350,25 +336,22 @@ window.onload = function() {
     };
     $('#normal').checked = true;
 };
-
-                                            </script>
-                        </div>
-        <div>
-            <label for="showLines" >show connection lines</label> <input  id="showLines" type="checkbox"  checked="true">
-        </div>
-
-        <div class="btn-group" data-toggle="buttons" id="modeSelector">
-          <label class="btn btn-primary active">
-
-            <input type="radio" name="options" id="lasso_selection_mode"  checked="true">Lasso selection mode
-</label>
-          <label class="btn btn-primary">
-            <input type="radio" name="options" id="hover_selection_mode">Hover selection mode
-          </label>
-          </div>
-
-        <br/>   
-        <a href="#"   onclick="savejson(this)" download="data.json" id="saveJSON" >save json</a>
-                </div>
-    </body>
+        </script>
+      </div>
+      <div>
+        <label for="showLines" >show connection lines</label>
+        <input  id="showLines" type="checkbox"  checked="true">
+      </div>
+      <div class="btn-group" data-toggle="buttons" id="modeSelector">
+        <label class="btn btn-primary active">
+          <input type="radio" name="options" id="lasso_selection_mode" checked="true">Lasso selection mode
+        </label>
+        <label class="btn btn-primary">
+          <input type="radio" name="options" id="hover_selection_mode">Hover selection mode
+        </label>
+      </div>
+      <br/>   
+      <a href="#"   onclick="savejson(this)" download="data.json" id="saveJSON" >save json</a>
+    </div>
+  </body>
 </html>
