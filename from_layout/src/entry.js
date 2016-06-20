@@ -204,7 +204,6 @@ function start_function_experiment(experiment_files, obj_this) {
     
     var experiment_file = experiment_files[args.filename];
     // experiment_file.header should already be fullfilled by now. But nonetheless then() is used. Maybe change this somehow in the future ...
-
     experiment_file.header.then(
         function (args, experiment_file, header_decoded) {
             var full_image = header_decoded.images[args.image_index];
@@ -243,7 +242,7 @@ function start_function_experiment(experiment_files, obj_this) {
                             ctx.fillStyle = "rgba(" + col[0] + ", " + col[1] + "," + col[2] + "," +  col[3] + ")";
                             ctx.fill();
                         }
-                        var data_url = canvas.toDataURL();
+                        var data_url = canvas.toDataURL("image/png");
 	                this.image = new Image();
                         setupImageCallbacks(this);
                         this.image.src = data_url;
