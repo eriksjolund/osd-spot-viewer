@@ -6,19 +6,51 @@
         <script src="https://openseadragon.github.io/openseadragon/openseadragon.min.js"></script>       
         <script src="http://eriksjolund.github.io/OpenSeadragonPaperjsOverlay/openseadragon-paperjs-overlay.js"></script>        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.9.24/paper-full.min.js"></script>
-
-
-        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
-          <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
 
-      <h2>Drag the circles with the mouse!</h2>
+    <div class="container-fluid">
 
-        <div id="osd" style="width: 1000px; height:800px;"></div>
-        <script>                
+<!--
+      <div class="row">     
+        <div class="span4 collapse-group">
+          <p class="collapse" id="view_details">First provide a URL to a DZI file. Then select a spot position file (JSON).</p>
+          <p><a class="btn" data-toggle="collapse" data-target="#view_details">View details &raquo;</a></p>
+        </div>
+      </div>
+      
+-->
+      <div class="row">     
+        <div class="jumbotron">
+          <h1>Spot position adjustment</h1>
+          <p>Load spot positions from a JSON file and after manually adjusting the positions save the result to a new JSON file</p>
+          <div class="span4 collapse-group">
+          <p class="collapse" id="view_details"><small>First provide a URL to a DZI file. Then select a spot position file (JSON).</small></p>
+          <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+	<div class="col-sm-12">
+	  <label class="btn btn-default btn-file">
+	    Select spot positions file (JSON format) <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="global.handleExperimentFiles(this.files)">
+	  </label>
+	  <br/>
+	  <!--   <button  onclick="add_osd_window()">add section</button>-->
+	</div>
+      </div>
+
+      
+      <h2>Drag the circles with the mouse!</h2>
+      <div class="row">     
+      <div id="osd" style="width: 1000px; height:800px;" class="col-sm-12" ></div>
+        <script>
 
 function serialize_key_from_coordinates(x, y) {
     return x + ',' + y;
@@ -319,7 +351,8 @@ window.onload = function() {
     $('#normal').checked = true;
 };
 
-        </script>
+                                            </script>
+                        </div>
         <div>
             <label for="showLines" >show connection lines</label> <input  id="showLines" type="checkbox"  checked="true">
         </div>
@@ -336,5 +369,6 @@ window.onload = function() {
 
         <br/>   
         <a href="#"   onclick="savejson(this)" download="data.json" id="saveJSON" >save json</a>
+                </div>
     </body>
 </html>
