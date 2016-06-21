@@ -221,12 +221,6 @@ function saveJSON(alink) {
     alink.href = url;
 };
 
-function guiMode() {
-    console.log(JSON.stringify($('#modeSelector input:radio:checked')));
-    return $('#modeSelector input:radio:checked').prop('id');
-    //return $('#modeSelector > .btn.active').prop('id');
-};
-
 function convert_to_paper_point(position) {
     var po = new OpenSeadragon.Point(position.x, position.y);
     var wp = window.viewer.viewport.viewerElementToImageCoordinates(po);
@@ -283,7 +277,7 @@ var handleAddDZI = function(jsondata) {
     keyboard_status.ctrl_key_is_down = false;
     var drag_handler = function(selection,  keyboard_status, circles, event) {
         var point = convert_to_paper_point(event.position);
-        if (keyboard_status.ctrl_key_is_down && guiMode() == "lasso_selection_mode") {
+        if (keyboard_status.ctrl_key_is_down) {
             selection.selection_path.add(point);
             window.viewer.setMouseNavEnabled(false);
             paper.view.draw();
@@ -346,11 +340,7 @@ var handleAddDZI = function(jsondata) {
     }.bind(null, keyboard_status);
     
     var press_handler = function(viewer, selection, circleLayer, keyboard_status, event) {
-        
-        if (guiMode() == "lasso_selection_mode") {
-            console.log("lasso_selection_mode");
-        }       
-        if (keyboard_status.ctrl_key_is_down && guiMode() == "lasso_selection_mode") {
+        if (keyboard_status.ctrl_key_is_down) {
             selection.selection_path = new paper.Path();
             selection.selection_path.strokeColor = 'black';
             selection.selection_path.strokeWidth = 1;
@@ -365,7 +355,7 @@ var handleAddDZI = function(jsondata) {
     }.bind(null, this.viewer, selection, circleLayer, keyboard_status);
     
     var dragEnd_handler = function(selection, keyboard_status, circles, event) {
-        if (keyboard_status.ctrl_key_is_down && guiMode() == "lasso_selection_mode") {
+        if (keyboard_status.ctrl_key_is_down) {
             var transformed_point = paper.view.viewToProject(new paper.Point(event.position.x, event.position.y));
             var hit_test_result = circleLayer.hitTest(transformed_point);
             for (var key in circles) {
@@ -439,18 +429,6 @@ var handleAddDZI = function(jsondata) {
       <div class="row">
         <div class="col-sm-12">
           <a href="#" onclick="saveJSON(this)" download="data.json" id="saveJSON" >save JSON</a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-12">
-          <div class="btn-group" data-toggle="buttons" id="modeSelector">
-            <label class="btn btn-primary active">
-              <input type="radio" name="options" id="lasso_selection_mode" checked="true">Lasso selection mode
-            </label>
-            <label class="btn btn-primary">
-              <input type="radio" name="options" id="hover_selection_mode">Hover selection mode
-            </label>
-          </div>
         </div>
       </div>
     </div>
