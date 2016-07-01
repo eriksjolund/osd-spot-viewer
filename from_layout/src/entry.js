@@ -493,7 +493,7 @@ function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title, x_co
         {
             tileSource: {
                 height: im.imageHeight,
-                width: im.imageHeight,
+                width: im.imageWidth,
                 tileSize: tile_conversion.tileSize,
                 tileOverlap: tile_conversion.tileOverlap,
                 getTileUrl: function (datafile, level, x, y) {
