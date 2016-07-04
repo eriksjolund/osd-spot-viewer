@@ -300,11 +300,18 @@ class RemoteSliceLoader {
         const xhr = new XMLHttpRequest();
         xhr.open( "GET", url, true );
         xhr.responseType = "arraybuffer";
-        xhr.setRequestHeader(
-            'Range', range_string);
-        xhr.onload = function( e ) {
-            console.log("this.status=" + this.status);
-            resolve(this.response);
+        xhr.setRequestHeader('Range', range_string);
+        xhr.onload = function(e) {
+            // Here we check whether the server supports the HTTP request header RANGE.
+	    // Maybe we could improve the check? Here is some additional information:
+	    // http://stackoverflow.com/questions/720419/how-can-i-find-out-whether-a-server-supports-the-range-header
+            if (this.status == 206 && size == this.response.byteLength) {
+                resolve(this.response);
+            } else {
+                const error_message = "It seems the web server does not support the HTTP request header RANGE.";
+                alert(error_message);
+                reject(error_message);
+            }
         };
         xhr.send();
         }.bind(this, this.url) ) }
