@@ -22,11 +22,12 @@
 // SOFTWARE.
 //
 // Author: Erik Sjolund
+
 var magic = [ 'S', 'T', '-', 'E', 'X', 'P', '\0', '\0' ];
 
 function addExperimentURL(remote_url, protobuf_loader, experiment_files) {
-    let slice_loader = new RemoteSliceLoader(remote_url);
-    let url_parser = document.createElement('a');
+    const slice_loader = new RemoteSliceLoader(remote_url);
+    const url_parser = document.createElement('a');
     url_parser.href = remote_url;
     // Retrieving the experiment filename out of an URL will not work if the URL is something like:
     //
@@ -47,15 +48,14 @@ function addExperimentURL(remote_url, protobuf_loader, experiment_files) {
     return experiment_file.genenames;
 }
 
-function update_unique_genenames(set_of_genenames, genenames_typeahead_elem, genenames_decoded) {
-    for (let i = 0; i < genenames_decoded.length; i++) {
-        const gene_names = genenames_decoded[i].geneNames;
-        for (let j = 0; j < gene_names.length; j++) {
-            set_of_genenames.add(gene_names[j]);
+function update_unique_genenames(set_of_genenames, genenames_typeahead_elem, genenames_decoded_array) {
+   for (const genenames_decoded of genenames_decoded_array) {
+       for (const gene_name of genenames_decoded.geneNames) {
+            set_of_genenames.add(gene_name);
         }
     }
     const unique_gene_names = [];
-    for (let item of set_of_genenames) {
+    for (const item of set_of_genenames) {
         unique_gene_names.push(item);
     }
     const genes_bloodhound = new Bloodhound({
@@ -89,21 +89,20 @@ class Global {
         Promise.all([genenames_promises]).then(update_unique_genenames.bind(null, this.set_of_genenames, this.genenames_typeahead_elem));
     }
     handleLayoutFiles(files) {
-	for (let i = 0; i < files.length; i++) {
+	for (const file of files.length) {
             const file_reader = new FileReader();
             file_reader.onloadend = function(layouts, experiment_files, evt) {
 		if (evt.target.readyState == FileReader.DONE) {
-		    let layout_json = JSON.parse(evt.target.result);
+		    const layout_json = JSON.parse(evt.target.result);
 		    layouts.push(new Layout(layout_json, experiment_files));
 		}
             }.bind(null, this.layouts, this.experiment_files);
-            file_reader.readAsText(files[i]);
+            file_reader.readAsText(file);
 	}
     }
     handleExperimentFiles(files) {
         const gene_names_promises = [];
-	for (let i = 0; i < files.length; i++) {
-            const file = files[i];
+	for (const file of files) {
             const slice_loader = new LocalSliceLoader(file);
             const experiment_file =  new StExpProtobufFile(slice_loader, this.protobuf_loader);
             gene_names_promises.push(experiment_file.genenames);
@@ -114,23 +113,21 @@ class Global {
     handleCreateLayoutFromGeneList() {
         const genes = $('#genes_textarea').val().split('\n');
         const layoutimages = [];
-        let i = 0;
-        for (let experiment_name in this.experiment_files) {
-            for (let j = 0; j < genes.length; ++j) {
-                const gene = genes[j];
+        for (const [file_index, experiment_name] of Object.keys(this.experiment_files).entries()) {
+            for (const [gene_index, gene] of genes.entries()) {
+                console.log(JSON.stringify(gene));
                 if (gene.length > 0) {
                     layoutimages.push(
                         { 'datafile' : experiment_name,
                           'rendering' : {
                               'type' : 'fromgene',
                               "gene_name" : gene },
-                          'x' : j,
-                          'y' : i
+                          'x' : gene_index,
+                          'y' : file_index
                         }
                     );
                 }
             }
-            ++i;
         }
         const layout_json = {};
         layout_json.layoutimages = layoutimages;
@@ -406,25 +403,25 @@ function get_spots(headersize, header, protobuf_loader, slice_loader) {
 
 function calculate_spot_colors_from_genehit_array(gene_hit_array) {
     const es_cutoff = estimate_cutoff(gene_hit_array);
-    const colors = [];
-    for (let i = 0; i < gene_hit_array.length; i++) {
-        if (gene_hit_array[i] <= es_cutoff) {
-            colors.push([0, 0, 0, 0]);
-        }
-        else {
-            let alpha = gene_hit_array[i] / 30;
-            if (alpha > 1) {
-                alpha = 1;
+    const colors = gene_hit_array.map(
+	function(gene_hit) {
+            if (gene_hit <= es_cutoff) {
+                return([0, 0, 0, 0]);
             }
-            colors.push([255, 0, 0, alpha]);
+            else {
+                let alpha = gene_hit / 30;
+                if (alpha > 1) {
+                    alpha = 1;
+                }
+                return([255, 0, 0, alpha]);
+            }
         }
-    }
+    );
     return colors;
 }
 
 function dictionary_from_string_array(string_array) {
     const result = {};
-
     console.log("string_array.length=" +       string_array.length);
     for (let i = 0; i < string_array.length; i++) {
         result[ string_array[i] ] = i;
@@ -453,7 +450,7 @@ function genehits_as_array(gene_hit_message, number_of_spots) {
     // TODO: Investigate this. Not so important but,
     // maybe it is faster to first create an array of only zeroes and then overwrite the values
     // not equal to zero..
-    const gene_hit_array = [];
+    let gene_hit_array = [];
     for (let i = 0; i < gene_hit_message.hits.length; i++) {
         const zeroes_skipped = gene_hit_message.zeroHitsSkipped[i];
         for (let j = 0; j < zeroes_skipped; j++) {
@@ -604,8 +601,8 @@ class Layout {
 
 	const layoutimages = this.layout_json['layoutimages'];
         const layout_image_promises = [];
-	for (let i = 0; i < layoutimages.length; i++) {
-            const layoutimage = layoutimages[i];
+
+	for (const layoutimage of layoutimages) {
             const experiment_file = this.experiment_files[ layoutimage.datafile ];
             if (layoutimage.rendering.type == "fromgene") {
                 const genehit = get_genehit_from_genename(layoutimage.rendering.gene_name, experiment_file.genenames_dict, experiment_file.headersize, experiment_file.header, experiment_file.protobuf_loader, experiment_file.slice_loader);
