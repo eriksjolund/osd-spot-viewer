@@ -152,12 +152,7 @@ function num_levels(width, height) {
 
 function scaled_tile_size(num_levels_, level, tile_size) {
     const count = num_levels_ - level - 1;
-    let factor = 1;
-    for (let i = 0; i < count; i++) {
-        factor = factor * 2;
-    }
-    const result =  tile_size * factor;
-    return result;
+    return tile_size * Math.pow(2, count);
 }
 
 function num_tiles_level(width, height, level, tile_size) {
