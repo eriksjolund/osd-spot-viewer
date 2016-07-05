@@ -165,12 +165,12 @@ function num_tiles_level(width, height, level, tile_size) {
 function calculate_tile_id(x_coord, y_coord, level, width, height, tile_size) {
     let result = 0;
     for (let i = 0; i < level; i++) {
-        result = result + num_tiles_level(width, height, i, tile_size);
+        result += num_tiles_level(width, height, i, tile_size);
     }
     const num_l = num_levels(width, height);
     const scaled_tile_s = scaled_tile_size(num_l, level, tile_size);
     const num_rows = Math.ceil(height / scaled_tile_s);
-    result = result + (num_rows * y_coord) + x_coord;
+    result += (num_rows * y_coord) + x_coord;
     return result;
 }
 
