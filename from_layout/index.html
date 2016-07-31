@@ -4,15 +4,24 @@
     <script src="//cdn.rawgit.com/dcodeIO/long.js/3.1.0/dist/long.min.js"></script>
     <script src="//cdn.rawgit.com/dcodeIO/bytebuffer.js/5.0.1/dist/bytebuffer.min.js"></script>
     <script src="//cdn.rawgit.com/dcodeIO/protobuf.js/5.0.1/dist/protobuf.min.js"></script>
+
+
     <script src="http://eriksjolund.github.io/temp_web_build_for_osd_spot_viewer/openseadragon/openseadragon.min.js"></script>
+
+
+
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
     <script type="text/javascript" src="http://openseadragon.github.io/svg-overlay/openseadragon-svg-overlay.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.12.0.min.js"></script>
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://twitter.github.io/typeahead.js/css/examples.css">
+
+
+    
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.11.1/typeahead.bundle.min.js"></script>
-    <script type="text/javascript" src="src/entry.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.1.1/bootstrap-slider.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.1.1/css/bootstrap-slider.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -23,11 +32,18 @@
           <p>Visualize gene expression on top of cell tissues by use of OpenSeadragon</p>
           <div class="span4 collapse-group">
             <p class="collapse" id="view_details">
-              <small><b>Quick start:</b> First select a local <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file or open a remote URL
+              <small><b>Quick start:</b> First select a local <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file or open a URL
                 to a st_exp_protobuf file. After that the "add gene" input field will provide auto-completion functionality when typing gene names. Add some genes
                 so that they appear as a new-line-separated list of genes in the gene list. Now click "Create layout from gene list". An OpenSeadragon window will
                 now appear where each of the genes have had its gene expression values painted as circles on top of the cell tissue microscope photos.
                 <br/>
+                <br/>
+		<b>Hosting st_exp_protobuf files:</b> When using a URL for accessing the <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file,
+		the web server neeeds to support the HTTP request header RANGE (see Wikipedia article about <it><a href="https://en.wikipedia.org/wiki/Byte_serving">Byte serving</a></it>). You could for instance use <a href="https://httpd.apache.org/">Apache</a>, <a href="https://nginx.org/">nginx</a>, <a href="https://www.npmjs.com/package/http-server">http-server</a> (from Node.js) or <a href="https://aws.amazon.com/s3">Amazon S3</a>. 
+		<br/>
+
+
+
                 <br/>
                 <b>More in-depth information:</b> The <a href="https://github.com/eriksjolund/st_exp_protobuf/">st_exp_protobuf</a> file
                 format stores <a href="https://en.wikipedia.org/wiki/Pyramid_(image_processing)">pyramid</a> image tiles of high-resolution microscope photos that
@@ -37,19 +53,21 @@
                 fast because only a fraction of the whole  st_exp_protobuf file needs to be downloaded (or read). The relevant parts of the data will be retrieved
                 as byte ranges.<br/>
                 The source code for this software project is located in the <a href="https://github.com/eriksjolund/osd-spot-viewer">osd-spot-viewer github project</a>
-                under <a href="https://github.com/eriksjolund/osd-spot-viewer/tree/master/from_layout">this directory</a> and it is licensed under the MIT license.
-              </small>
+                under <a href="https://github.com/eriksjolund/osd-spot-viewer/tree/master/from_layout">this directory</a> and it is licensed under the MIT license.<br/><br/>
+
+
+	      </small>
             </p>
             <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
           </div>
         </div>
       </div>
 
-      <h2>Experiments</h2>
+      <h2>Data files</h2>
       <div class="row">
 	<div class="col-sm-12">
 	  <label class="btn btn-default btn-file">
-	    Add local experiment files <input type="file" style="display: none;" id="experiment_files_input" multiple onchange="global.handleExperimentFiles(this.files)">
+	    Add local st_exp_protobuf files <input type="file" style="display: none;" id="experiment_files_input" multiple>
 	  </label>
 	  <br/>
 	  <!--   <button  onclick="add_osd_window()">add section</button>-->
@@ -59,9 +77,9 @@
 	<div class="col-sm-12">
 	  <div class="input-group">
             <span class="input-group-btn">
-              <button class="btn btn-default" type="button" onclick="global.handleAddExperimentURL()">Add URL to experiment file</button>
+              <button class="btn btn-default" type="button" id="handleAddDataFileURLbutton" >Add URL to st_exp_protobuf file</button>
             </span>
-            <input type="text" id="input_remote_url_to_add" class="form-control" placeholder="Add URL to remote experiment file">
+            <input type="text" id="input_remote_url_to_add"  value="http://localhost:8080/Rep10_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf" class="form-control" placeholder="Add URL to st_exp_protobuf file">
 	  </div>
 	</div>
       </div>
@@ -70,70 +88,56 @@
       <div class="row" style=" margin-top: 10px;">
         <div class="col-sm-12">
 	  <label class="btn btn-default btn-file">
-	    Add local layout file
-	    <input type="file" style="display: none;"   id="layout_files_input" multiple onchange="global.handleLayoutFiles(this.files)">
+	    Add local layout files
+	    <input type="file" style="display: none;"   id="layout_files_input" multiple>
 	  </label>
 	</div>
       </div>
       <h3>Create layout</h3>
+
+
+
       <div class="row" style=" margin-top: 10px;">
-        <div class="col-sm-12">
 
-          <label class="btn btn-default btn-file">
-            Add gene
 
-            <input type="text" id="add_gene_input" class="typeahead" />
-          </label>
 
-          <textarea id="genes_textarea" cols="20" rows="5"></textarea>
-          <button class="btn btn-default" type="button"
-               onclick="global.handleCreateLayoutFromGeneList()">Create layout from gene list</button>
-        </div>
+
+	
+        <div class="col-sm-6">
+
+                <div class="panel-body">
+                    <div class="container">
+                        <ul class="nav nav-tabs" id="create_layouts_nav_tabs">
+
+                        </ul>
+                        <div class="tab-content" id="create_layouts_tab_content">
+
+                        </div>
+                    </div>
+ 	    </div>
+         </div>
       </div>
+
+
       <div class="row" style=" margin-top: 10px;">
         <div class="col-sm-12">
           <div id="osd_windows"></div>
-	  <div>
-	    <br/>
-	    <b>
-              Changes to this web page: June 1st 2016, started to use Javascript ES6 Promises (only tested with Google Chrome and Firefox)
-	    </b>
-	  </div>
         </div>
       </div>
     </div>
 
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-        <script>
-window.osd_layout_image_colors = [];
-var global = new Global($('.typeahead'));
-var startFunction = function(experiment_files, obj_this) { start_function_experiment(experiment_files, obj_this); }.bind(null, global.experiment_files);
+    <!--    <script type="text/javascript" src="http://localhost:8090/webpack-dev-server/bundle" charset="utf-8"></script> -->
+    <script type="text/javascript" src="bundle.js" charset="utf-8"></script> 
+    <script>
 
-function add_gene_to_list(gene_name) {
-    var area = $('#genes_textarea').val();
-    var genes = $('#genes_textarea');
-    genes.val(genes.val() + gene_name + '\n');
-    // Reset gene name field
-    $('.typeahead').typeahead('val','');
-}
+      // The startFunction variable is set so that it will be used in a modified OpenSeadragon
+      // https://github.com/eriksjolund/openseadragon/commit/d7bacf38a27851532f4dfe2815a933b86e56314b
+      //
+      // To fix this properly, we would have to modify https://github.com/eriksjolund/openseadragon more.
+      var startFunction = window.startFunction2;
 
-var updater = function(evt, gene_name) {
-    add_gene_to_list(gene_name);
-    return '';
-};
-
-$('.typeahead').bind('typeahead:selected', function(ev, suggestion) {
-    add_gene_to_list(suggestion );
-});
-
-$('.typeahead').bind("keypress", {}, function (ev) {
-    if (ev.keyCode == 13) {
-        ev.preventDefault();
-        var gene_input_value = $('#add_gene_input').val();
-        add_gene_to_list(gene_input_value );
-    }
-}
-);
+      
     </script>
   </body>
 </html>

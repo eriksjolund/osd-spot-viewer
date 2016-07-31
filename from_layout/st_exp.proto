@@ -18,10 +18,28 @@ import public "tiled_image.proto";
 
 
 message Spot {
-  // We limit the total number of spots to (2^32-1) as the spot id is uint32_t.
-  // Therefore we limit the grid coordinates to be max (2^16-1).
-  required uint32 xCoordGrid = 1;  // integer in range: 0 ... (2^16-1) 
-  required uint32 yCoordGrid = 2;  // integer in range: 0 ... (2^16-1)
+
+// The intention of the file format design was to let
+// xCoordGrid and xCoordGrid represent the logical grid
+// coordinates (uint32). But to simplify the importing data
+// from
+// http://www.spatialtranscriptomicsresearch.org/wp-content/uploads/2016/07/Rep1_MOB_aligned.json_.gz
+// http://www.spatialtranscriptomicsresearch.org/wp-content/uploads/2016/07/Rep1_MOB_count_matrix-1.tsv
+// we let them be float.
+
+
+//  For documentation purposes the original design idea is kept here:
+//  // We limit the total number of spots to (2^32-1) as the spot id is uint32_t.
+//  // Therefore we limit the grid coordinates to be max (2^16-1).
+//  required uint32 xCoordGrid = 1;  // integer in range: 0 ... (2^16-1) 
+//  required uint32 yCoordGrid = 2;  // integer in range: 0 ... (2^16-1)
+//
+// but due to the file formats published at 
+
+  required float xCoordGrid = 1;
+  required float yCoordGrid = 2;
+
+
   required float xCoordPhyscial = 3;  // millimeter
   required float yCoordPhyscial = 4;  // millimeter
   required string barcode = 5;
@@ -29,6 +47,7 @@ message Spot {
 
 message Spots {
   repeated Spot spots = 1;
+  required float spotCircleRadius = 2;
 }
 
 message CountPerSpot {
