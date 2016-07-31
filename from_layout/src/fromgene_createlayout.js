@@ -56,7 +56,7 @@ export default class {
             Add gene
             <input type="text" id="add_gene_input" class="typeahead" />
             </label>
-            <textarea id="genes_textarea" cols="20" rows="5">Dusp8</textarea>
+            <textarea id="genes_textarea" cols="20" rows="5"></textarea>
             </div>
 	    <div class="col-sm-6">
 	    <button class="btn btn-default" type="button"
