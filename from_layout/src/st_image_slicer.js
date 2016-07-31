@@ -68,9 +68,9 @@ export default class {
                         for (let i = 0; i < spots_decoded.spots.length; i++) {
                             const spot = spots_decoded.spots[i];
                             ctx.beginPath();
-                            const x_circle = coord_relative_tile(x_coord, spot.xCoordPhyscial,
+                            const x_circle = coord_relative_tile(x_coord, spot.xCoordPhysical,
 								 tile_size, tile_overlap, level_factor);
-                            const y_circle = coord_relative_tile(y_coord, spot.yCoordPhyscial,
+                            const y_circle = coord_relative_tile(y_coord, spot.yCoordPhysical,
 								 tile_size, tile_overlap, level_factor);
                             ctx.arc(x_circle, y_circle, scaled_radius, 0, 2 * Math.PI, false);
                             ctx.closePath();

@@ -40,8 +40,8 @@ message Spot {
   required float yCoordGrid = 2;
 
 
-  required float xCoordPhyscial = 3;  // millimeter
-  required float yCoordPhyscial = 4;  // millimeter
+  required float xCoordPhysical = 3;  // millimeter
+  required float yCoordPhysical = 4;  // millimeter
   required string barcode = 5;
 }
 
