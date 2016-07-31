@@ -22,32 +22,73 @@ An example of software design nr 2.
 http://eriksjolund.github.io/osd-spot-viewer/from_layout/index.html
 
 A json file defines what genes and what experiments should be displayed. 
+Either by specifying genenames:
 
+	{
+	  "layoutimages": [
+	    {
+	      "rendering_type": "fromgene",
+	      "rendering_data": {
+		"data_filename": "file.st_exp_protobuf",
+		"gene_name": "Dusp8",
+		"genehit_cutoff": 3
+	      },
+	      "x": 0,
+	      "y": 0
+	    },
+	    {
+	      "rendering_type": "fromgene",
+	      "rendering_data": {
+		"data_filename": "file.st_exp_protobuf",
+		"gene_name": " "Tbc1d9b",
+		"genehit_cutoff": 5
+	      },
+	      "x": 1,
+	      "y": 0
+	    }
 
-    { "layoutimages" : [
-        { "datafile" : "file.st_exp_protobuf",
-          "rendering" : { "type" : "fromgene",  "gene_name" : "Sbds" },
-          "x" : 1,
-          "y" : 1
-        } ,
-        { "datafile" : "file.st_exp_protobuf",
-          "rendering" : { "type" : "fromgene",  "gene_name" : "Tbc1d9b" },
-          "x" : 2,
-          "y" : 1
-        },
-        { "datafile" : "file.st_exp_protobuf",
-          "rendering" : { "type" : "fromgene",  "gene_name" : "Vstm2l" },
-          "x" : 1,
-          "y" : 2
-        },
-        { "datafile" : "file.st_exp_protobuf",
-          "rendering" : { "type" : "fromgene",  "gene_name" : "Ndufaf4" },
-          "x" : 2,
-          "y" : 2
+	  ]
+	}
+
+or by specifying your own choice of spot colors:
+
+    {
+      "layoutimages": [
+        {
+          "rendering_type": "fromcolor",
+          "rendering_data": {
+            "data_filename": "file.st_exp_protobuf",
+            "title": "research results from today",
+            "spot_colors": [
+              [
+                217,
+                136,
+                142,
+                1
+              ],
+              [
+                173,
+                36,
+                14,
+                1
+              ],
+              [
+                143,
+                126,
+                142,
+                1
+              ]
+	    ]
+	  },
+	  "x": 0,
+	  "y": 0
         }
-    ]}
+      ]
+    }
 
-Unfortunately, no experiment data files are available as of today, so there is currently no way to see how the demo works.
+To see how the demo works, you could create some st_exp_protobuf files.
+See
+https://github.com/eriksjolund/st_exp_protobuf
 
 ## Draggable circles
 This demo is an example of software design nr 1 but instead of fetching the image tiles from a single file it uses the normal DZI file format.
@@ -58,3 +99,5 @@ The circles can be selected with a mouse lasso (press the CTRL-key) and then dra
 with the mouse.
 
 (The circles are connected by grid lines in the example):
+
+
