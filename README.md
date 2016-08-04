@@ -19,7 +19,7 @@ Currently the git repo contains code for design nr 1 and nr 2 but code for desig
 # Demos
 ## Viewing gene expression
 An example of software design nr 2.
-https://eriksjolund.github.io/osd-spot-viewer-webpack-build/build1/
+https://eriksjolund.github.io/osd-spot-viewer-webpack-build/build2/
 (It was built with webpack from its source code:
 https://github.com/eriksjolund/osd-spot-viewer/tree/master/from_layout)
 
