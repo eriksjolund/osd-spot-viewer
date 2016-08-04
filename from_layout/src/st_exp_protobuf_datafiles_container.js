@@ -53,7 +53,7 @@ export default class {
 	for (const slice_loader of slice_loaders) {
 	    const experiment_file = new StExpProtobufFile(slice_loader, this.protobuf_loader);	    
             gene_names_promises.push(experiment_file.genenames);
-	    this.data_files[ slice_loader.name() ] = experiment_file;
+	    this.data_files[ slice_loader.filename() ] = experiment_file;
 	}
         Promise.all(gene_names_promises).then(
  	    function(genenames_decoded_array) {

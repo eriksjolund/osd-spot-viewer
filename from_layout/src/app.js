@@ -29,8 +29,8 @@ import Layout from './layout';
 
 function check_for_filename_collision(datafiles_container, slice_loaders) {
 		for (const slice_loader of slice_loaders) {
-	if (slice_loader.name() in datafiles_container.data_files) {
-            throw Error("The data file name \"" + slice_loader.name() + "\" has already been loaded");
+	if (slice_loader.filename() in datafiles_container.data_files) {
+            throw Error("The data file name \"" + slice_loader.filename() + "\" has already been loaded");
 	}
     }
 }

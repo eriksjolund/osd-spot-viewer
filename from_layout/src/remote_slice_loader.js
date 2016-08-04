@@ -47,9 +47,9 @@ function parse_url_get_filename(url) {
 export default class {
     constructor(url) {
         this.url = url;
-        this.filename = parse_url_get_filename(url);
+        this.file_name = parse_url_get_filename(url);
     }
-    name() { return this.filename };
+    filename() { return this.file_name };
     get_slice(start_pos, size) {
         return new Promise(function(url, resolve, reject) {
         const range_string = 'bytes=' +  start_pos + "-" + (start_pos + size - 1);

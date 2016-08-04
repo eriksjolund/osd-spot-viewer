@@ -25,7 +25,7 @@ export default class {
     constructor(file_api_file) {
         this.file = file_api_file;
     }
-    name() {
+    filename() {
       return this.file.name;
     }
     get_slice(start_pos, size) {
