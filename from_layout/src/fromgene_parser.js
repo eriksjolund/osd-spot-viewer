@@ -82,7 +82,7 @@ function getSlicePromise(gene_name, genehit_cutoff, st_exp_protobuf_file) {
 
 export default class {
     constructor() {}
-    static name() { return "fromgene"; }
+    static parser_name() { return "fromgene"; }
     static parser_func() {
 	return function(rendering_data, data_files) {
             const data_file = data_files[ rendering_data.data_filename ];                

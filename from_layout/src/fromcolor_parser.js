@@ -27,7 +27,7 @@ import st_image_slicer from './st_image_slicer.js';
 
 export default class {
     constructor() {}
-    static name() { return "fromcolor"; }
+    static parser_name() { return "fromcolor"; }
     static parser_func() {
 	return function(rendering_data, data_files) {
             const data_file = data_files[ rendering_data.data_filename ];                

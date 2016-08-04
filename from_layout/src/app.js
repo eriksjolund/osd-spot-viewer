@@ -40,7 +40,7 @@ export class App {
         this.datafiles_container = datafiles_container;
 	this.layout_renderers = {};
 	for (const parser of parsers) {
-   	  this.layout_renderers[parser.name()] = parser.parser_func();
+   	  this.layout_renderers[parser.parser_name()] = parser.parser_func();
 	}
 	
 	for (const layout_creator_class of layout_creator_classes) {
