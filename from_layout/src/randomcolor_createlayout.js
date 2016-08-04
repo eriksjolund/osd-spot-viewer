@@ -89,7 +89,7 @@ export default class {
 	    }.bind(this, data_files)
 	);
     }
-    name() { return "random color"; }
+    layout_creator_name() { return "random color"; }
     id_string() { return "randomcolor_createlayout_js"; }
     update_after_data_change() {}
     html_content() {

@@ -46,7 +46,7 @@ export class App {
 	for (const layout_creator_class of layout_creator_classes) {
             const layout_creator = new layout_creator_class(datafiles_container,   function(layout_json) {   this.addLayout(layout_json); }.bind(this) );
             this.datafiles_container.add_change_listener(function () { this.update_after_data_change();}.bind(layout_creator) );
-	    const name = layout_creator.name();
+	    const name = layout_creator.layout_creator_name();
 	    const id_string = layout_creator.id_string();
 	    const nav_tab_entry = `<li><a data-toggle="tab" href="#${id_string}">${name}</a></li>`;
             $("#create_layouts_nav_tabs").append(nav_tab_entry);
