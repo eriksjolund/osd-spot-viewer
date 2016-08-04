@@ -36,9 +36,6 @@ export class SlicedImage {
      * Create a SlicedImage.
      */
     constructor() {
-	    if (new.target === SlicedImage) {
-		throw new TypeError("Cannot construct Abstract instances directly");
-	    }
     }
 
     /**
