@@ -37,7 +37,6 @@ function parse_url_get_filename(url) {
     //
     // TODO: Maybe the experiment name should be stored inside the experiment file itself instead?
     const filename = url_parser.pathname.substr(url_parser.pathname.lastIndexOf("/")+1);
-    url_parser.remove();
     return filename;
 }
 
