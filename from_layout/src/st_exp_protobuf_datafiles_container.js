@@ -50,20 +50,27 @@ export default class {
     }
     push_sliceloaders(slice_loaders) {
 	const gene_names_promises = [];
+        const filenames = [];
 	for (const slice_loader of slice_loaders) {
 	    const experiment_file = new StExpProtobufFile(slice_loader, this.protobuf_loader);	    
             gene_names_promises.push(experiment_file.genenames);
 	    this.data_files[ slice_loader.filename() ] = experiment_file;
+	    filenames.push(slice_loader.filename());
 	}
         Promise.all(gene_names_promises).then(
- 	    function(genenames_decoded_array) {
+	    function(filenames, genenames_decoded_array) {
+		let i = 0;
 		for (const genenames_decoded of genenames_decoded_array) {
 		    for (const gene_name of genenames_decoded.geneNames) {
 			this.set_of_genenames.add(gene_name);
 		    }
+		    const gene_name_count = genenames_decoded.geneNames.length;
+		    const filename = filenames[i];
+		    $("#opened_data_files").append(`<tr><td>${filename}</td><td>${gene_name_count}</td></tr>`);
+		    i += 1;
 		}
 		this.notify_change_listeners();
-	    }.bind(this));
+	    }.bind(this, filenames));
     }
     static file_format_name() { return "st_exp_protobuf"; }
 }
