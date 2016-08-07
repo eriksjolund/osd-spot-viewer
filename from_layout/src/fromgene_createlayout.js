@@ -90,7 +90,7 @@ export default class {
 	// Reset gene name field
 	this.genenames_typeahead_elem.typeahead('val','');
     }
-    layout_creator_name() { return "from gene"; }
+    layout_creator_name() { return "from gene data"; }
     id_string() { return "fromgene_createlayout_js"; }
     update_after_data_change() {
 	console.log("In fromgene_createlayout.js update_after_data_change()");
