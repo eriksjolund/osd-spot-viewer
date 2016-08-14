@@ -50,8 +50,8 @@ $(document).ready(function(){
         var add_l = function(app, layout_json) {
             app.addLayout(layout_json);
         }.bind(null, app);
-        app.addDataFileURL("Rep1_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
-        app.addDataFileURL("Rep2_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
+        app.addDataFileURL("generated_st_exp_protobuf/Rep1_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
+        app.addDataFileURL("generated_st_exp_protobuf/Rep2_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
         app.addLayout(layout_fromcolor);
         app.addLayout(layout_fromgene_Th_Camk4_Vip);
         app.addLayout(layout_fromgene_Penk_Doc2g_Kctd12);
