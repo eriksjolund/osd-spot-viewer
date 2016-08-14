@@ -25,6 +25,10 @@
 
 import { App, get_tile_function } from './app';
 
+import layout_fromcolor from './example_layouts/layout_fromcolor';
+import layout_fromgene_Penk_Doc2g_Kctd12 from './example_layouts/layout_fromgene_Penk_Doc2g_Kctd12';
+import layout_fromgene_Th_Camk4_Vip from './example_layouts/layout_fromgene_Th_Camk4_Vip';
+
 import fromgene_parser from './fromgene_parser';
 import fromcolor_parser from './fromcolor_parser';
 
@@ -34,21 +38,38 @@ import st_exp_protobuf_datafiles_container from './st_exp_protobuf_datafiles_con
 
 var datafiles_container = new st_exp_protobuf_datafiles_container();
 var app = new App(datafiles_container,
-		  [fromgene_parser, fromcolor_parser],
-		  [fromgene_createlayout, randomcolor_createlayout]);
+                  [fromgene_parser, fromcolor_parser],
+                  [fromgene_createlayout, randomcolor_createlayout]);
 
 $(document).ready(function(){
-      $('#handleAddDataFileURLbutton').click(function () {
-    app.handleAddDataFileURL();
-});
+    $('#handleAddDataFileURLbutton').click(function () {
+        app.handleAddDataFileURL();
+    });
 
-$('#layout_files_input').change(function (files) {
-    app.handleOpenLocalLayoutFiles(this.files);
-});
+    $('#handleOpenExamplesButton').click(function () {
+        var add_l = function(app, layout_json) {
+            app.addLayout(layout_json);
+        }.bind(null, app);
+        app.addDataFileURL("Rep1_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
+        app.addDataFileURL("Rep2_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf");
+        app.addLayout(layout_fromcolor);
+        app.addLayout(layout_fromgene_Th_Camk4_Vip);
+        app.addLayout(layout_fromgene_Penk_Doc2g_Kctd12);
 
-$('#experiment_files_input').change(function (files) {
-    app.handleOpenLocalDataFiles(this.files);
-});
+        $(this).prop("disabled",true);
+
+        $('html, body').stop().animate({
+            'scrollTop': $("#osd_windows").offset().top
+        }, 2000, 'swing');
+    });
+
+    $('#layout_files_input').change(function (files) {
+        app.handleOpenLocalLayoutFiles(this.files);
+    });
+
+    $('#experiment_files_input').change(function (files) {
+        app.handleOpenLocalDataFiles(this.files);
+    });
 });
 
 window.startFunction2 = get_tile_function.bind(null, app.layouts);

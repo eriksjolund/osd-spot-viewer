@@ -4,12 +4,7 @@
     <script src="//cdn.rawgit.com/dcodeIO/long.js/3.1.0/dist/long.min.js"></script>
     <script src="//cdn.rawgit.com/dcodeIO/bytebuffer.js/5.0.1/dist/bytebuffer.min.js"></script>
     <script src="//cdn.rawgit.com/dcodeIO/protobuf.js/5.0.1/dist/protobuf.min.js"></script>
-
-
     <script src="https://eriksjolund.github.io/temp_web_build_for_osd_spot_viewer/openseadragon/openseadragon.min.js"></script>
-
-
-
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"></script>
     <script type="text/javascript" src="https://openseadragon.github.io/svg-overlay/openseadragon-svg-overlay.js"></script>
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
@@ -31,17 +26,24 @@
           <p>Visualize gene expression on top of cell tissues by use of OpenSeadragon</p>
           <div class="span4 collapse-group">
             <p class="collapse" id="view_details">
-              <small><b>Quick start:</b> First select a local <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file or open a URL
-                to a st_exp_protobuf file. After that the "add gene" input field will provide auto-completion functionality when typing gene names. Add some genes
-                so that they appear as a new-line-separated list of genes in the gene list. Now click "Create layout from gene list". An OpenSeadragon window will
-                now appear where each of the genes have had its gene expression values painted as circles on top of the cell tissue microscope photos.
+              <small><b>Quick start:</b>
+
+Click the button <em>Open some example data files and layouts</em> to view some examples. You can now create your own layout by filling out gene names in the <i>add gene</i> input field that is auto-completed. The added genes are visible as a new-line-separated list of names in the gene list.
+ After clicking "Create layout from gene list", an OpenSeadragon window appears where each of the genes have had its gene expression values painted as circles on top of the cell tissue microscope photos.
+
                 <br/>
                 <br/>
-		<b>Hosting st_exp_protobuf files:</b> When using a URL for accessing the <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file,
-		the web server neeeds to support the HTTP request header RANGE (see Wikipedia article about <it><a href="https://en.wikipedia.org/wiki/Byte_serving">Byte serving</a></it>). You could for instance use <a href="https://httpd.apache.org/">Apache</a>, <a href="https://nginx.org/">nginx</a>, <a href="https://www.npmjs.com/package/http-server">http-server</a> (from Node.js) or <a href="https://aws.amazon.com/s3">Amazon S3</a>. 
-		<br/>
 
+                <b>Example files from a new gene expression meassurement technology:</b> Some st_exp_protobuf files were created by the shell script <a href="https://github.com/eriksjolund/st_exp_protobuf/blob/master/sh/download_and_convert_example_data.sh">download_and_convert_example_data.sh</a> out of data sets from <a href="http://www.spatialtranscriptomicsresearch.org/datasets/">www.spatialtranscriptomicsresearch.org</a>.
+The datasets are gene expression meassurements done with the technology described in the scientific paper
+<i><a href="http://science.sciencemag.org/content/353/6294/78">Visualization and analysis of gene expression in tissue sections by spatial transcriptomics</a></i> published in Science June 2016. The generated example files (e.g. <a href="https://eriksjolund.github.io/osd-spot-viewer-webpack-build/generated_st_exp_protobuf/Rep1_MOB_count_matrix-1.tsv_with_photo.st_exp_protobuf">example file (34 Mb)</a>, <a href="https://eriksjolund.github.io/osd-spot-viewer-webpack-build/generated_st_exp_protobuf/Layer3_BC_count_matrix-1.tsv_with_photo.st_exp_protobuf">example file (17 Mb)</a> can be opened in the viewer either as remote URL:s or as local files after downloading them.
 
+                <br/>
+                <br/>
+
+                <b>Hosting st_exp_protobuf files:</b> When using a URL for accessing the <a href="https://github.com/eriksjolund/st_exp_protobuf">st_exp_protobuf</a> file,
+                the web server neeeds to support the HTTP request header RANGE (see Wikipedia article about <it><a href="https://en.wikipedia.org/wiki/Byte_serving">Byte serving</a></it>). You could for instance use <a href="https://httpd.apache.org/">Apache</a>, <a href="https://nginx.org/">nginx</a>, <a href="https://www.npmjs.com/package/http-server">http-server</a> (from Node.js) or <a href="https://aws.amazon.com/s3">Amazon S3</a>.
+                <br/>
 
                 <br/>
                 <b>More in-depth information:</b> The <a href="https://github.com/eriksjolund/st_exp_protobuf/">st_exp_protobuf</a> file
@@ -55,83 +57,78 @@
                 under <a href="https://github.com/eriksjolund/osd-spot-viewer/tree/master/from_layout">this directory</a> and it is licensed under the MIT license.<br/><br/>
 
 
-	      </small>
+              </small>
             </p>
             <p><a class="btn btn-primary btn-lg" data-toggle="collapse" data-target="#view_details">Learn more &raquo;</a></p>
           </div>
         </div>
       </div>
 
+      <h2>Examples</h2>
+      <div class="row">
+        <div class="col-sm-12">
+
+              <button class="btn btn-default" type="button" id="handleOpenExamplesButton" >Open some example data files and layouts</button>
+          <br/>
+          <!--   <button  onclick="add_osd_window()">add section</button>-->
+        </div>
+      </div>
+
+
       <h2>Data files</h2>
       <div class="row">
-	<div class="col-sm-12">
-	  <label class="btn btn-default btn-file">
-	    Add local st_exp_protobuf files <input type="file" style="display: none;" id="experiment_files_input" multiple>
-	  </label>
-	  <br/>
-	  <!--   <button  onclick="add_osd_window()">add section</button>-->
-	</div>
+        <div class="col-sm-12">
+          <label class="btn btn-default btn-file">
+            Add local st_exp_protobuf files <input type="file" style="display: none;" id="experiment_files_input" multiple/>
+          </label>
+          <br/>
+          <!--   <button  onclick="add_osd_window()">add section</button>-->
+        </div>
       </div>
       <div class="row" style=" margin-top: 10px;">
-	<div class="col-sm-12">
-	  <div class="input-group">
-            <span class="input-group-btn">
+        <div class="col-sm-12">
               <button class="btn btn-default" type="button" id="handleAddDataFileURLbutton" >Add URL to st_exp_protobuf file</button>
-            </span>
-            <input type="text" id="input_remote_url_to_add"  value="" class="form-control" placeholder="type URL here">
-	  </div>
-	</div>
+            <input type="text" id="input_remote_url_to_add"  value="" class="form-control" placeholder="type URL here"/>
+
+        </div>
       </div>
       <div class="row" style=" margin-top: 10px;">
-	<div class="col-sm-6">
-	  <table class="table table-striped">
-	    <thead>
-	      <tr>
-		<th>filename</th>
-		<th>number of genes</th>
-	      </tr>
-	    </thead>
-	    <tbody id="opened_data_files">
-	    </tbody>
-	  </table>
-	</div>
+        <div class="col-sm-6">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>filename</th>
+                <th>number of genes</th>
+              </tr>
+            </thead>
+            <tbody id="opened_data_files">
+            </tbody>
+          </table>
+        </div>
       </div>
       <h2>Layouts</h2>
       <h3>Open layouts</h3>
       <div class="row" style=" margin-top: 10px;">
         <div class="col-sm-12">
-	  <label class="btn btn-default btn-file">
-	    Add local layout files
-	    <input type="file" style="display: none;"   id="layout_files_input" multiple>
-	  </label>
-	</div>
+          <label class="btn btn-default btn-file">
+            Add local layout files
+            <input type="file" style="display: none;"   id="layout_files_input" multiple>
+          </label>
+        </div>
       </div>
       <h3>Create layout</h3>
-
-
-
       <div class="row" style=" margin-top: 10px;">
-
-
-
-
-	
         <div class="col-sm-6">
-
                 <div class="panel-body">
                     <div class="container">
                         <ul class="nav nav-tabs" id="create_layouts_nav_tabs">
-
                         </ul>
                         <div class="tab-content" id="create_layouts_tab_content">
-
                         </div>
                     </div>
- 	    </div>
+            </div>
          </div>
       </div>
-
-
       <div class="row" style=" margin-top: 10px;">
         <div class="col-sm-12">
           <div id="osd_windows"></div>

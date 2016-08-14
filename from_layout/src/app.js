@@ -58,20 +58,22 @@ export class App {
 		$("#create_layouts_tab_content div").first().addClass("in active");
 	this.layouts = [];
     }
-
     addLayout(layout_json) { 
 	this.layouts.push(new Layout(layout_json, this.datafiles_container.data_files, this.layouts.length, this.layout_renderers));
     }
     handleAddDataFileURL() {
 	const remote_url = document.getElementById('input_remote_url_to_add').value;
-        const slice_loaders = [new RemoteSliceLoader(remote_url)];
+        this.addDataFileURL(remote_url);
+
+    }
+
+    addDataFileURL(url) {
+        const slice_loaders = [new RemoteSliceLoader(url)];
 	check_for_filename_collision(this.datafiles_container, slice_loaders);
 	this.datafiles_container.push_sliceloaders(slice_loaders);
     }
     handleOpenLocalLayoutFiles(files) {
-	    console.log("222222222222222 in local layout file");
 	for (const file of files) {
-	    console.log("in local layout file");
             const file_reader = new FileReader();
             file_reader.onloadend = function(evt) {
 		if (evt.target.readyState == FileReader.DONE) {

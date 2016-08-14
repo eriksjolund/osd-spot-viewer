@@ -58,6 +58,7 @@ function add_layout_image(osd_viewer, overlay, layoutimage_datafile, title,
 
 export default class {
     constructor(layout_json, data_files, layout_index, layout_renderers) {
+
 	this.layout_renderers = layout_renderers;
 	this.tiled_images = [];
         this.layout_json = layout_json;
@@ -72,8 +73,8 @@ export default class {
 	this.data_files = data_files;
         const osd_windows = document.getElementById('osd_windows');
         const layout_tab_div = document.createElement("div");
-        osd_windows.appendChild(layout_tab_div);
-        const number_string = osd_windows.children.length.toString();
+        $('#osd_windows').prepend(layout_tab_div);
+        const number_string = $('#osd_windows div').length.toString();
         const osd_id_string = "osd-" + number_string;
         const json_id_string = "json-" + number_string;
         const osd_alink_id_string = "osd-alink-" + number_string;
@@ -126,9 +127,11 @@ export default class {
         }.bind(this))
         this.json_container_div.textContent = json_text;
         this.osd_container_div = document.getElementById(osd_id_string);
-        this.osd_container_div.style.width = "1200px";
-        this.osd_container_div.style.height = "1200px";
+//        this.osd_container_div.style.width = "1200px";
+        this.osd_container_div.style.width = "100%";
+        this.osd_container_div.style.height = "300px";
         this.setViewerFromLayoutJson();
+
     }
     setViewerFromLayoutJson() {
 	this.viewer = new OpenSeadragon({

@@ -43,26 +43,27 @@ export default class {
     constructor(st_data_files_container, add_layout_func) {
 	this.st_data_files_container = st_data_files_container;
         this.add_layout_func = add_layout_func;
-	this.div_elem = $('<div />')	;
+	this.div_elem = $('<div style="margin-top: 10px;"/>')	;
 	const content =  `
-              <div class="col-sm-6">
-	      <label class="btn btn-default btn-file">Gene hit cutoff 
-	      <input id="genehit_cutoff"  type="text" data-slider-min="1" data-slider-max="1000" data-slider-scale="logarithmic" data-slider-step="1" data-slider-value="3" />
-	      </label>
-            </div>
-	    <div class="row" style=" margin-top: 10px;">
-            <div class="col-sm-6">
-            <label class="btn btn-default btn-file">
+
+<div class="col-sm-12">
+<div class="form-group">
+            <label  for="add_gene_input">
             Add gene
-            <input type="text" id="add_gene_input" class="typeahead" />
+            <input type="text" id="add_gene_input" class="typeahead form-control" />
             </label>
-            <textarea id="genes_textarea" cols="20" rows="5"></textarea>
             </div>
-	    <div class="col-sm-6">
+<div class="form-group">
+            <label  for="genes_textarea">Gene list:</label>
+            <textarea id="genes_textarea" cols="30" rows="5"></textarea>
+            </div>
+<div class="form-group">
+	      <label for="genehit_cutoff" >Gene hit cutoff</label>
+	      <input id="genehit_cutoff"  type="text" data-slider-min="1" data-slider-max="1000" data-slider-scale="logarithmic" data-slider-step="1" data-slider-value="3" />
+            </div>
 	    <button class="btn btn-default" type="button"
         id="createLayoutFromGeneListButton">Create layout from gene list</button>
             </div>
-	    </div>
 	    `;
 	this.div_elem.append(content);
 	this.genenames_typeahead_elem = $(".typeahead", this.div_elem);
